@@ -1,42 +1,31 @@
--- GUI Oluştur
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local TextBox = Instance.new("TextBox")
-local Button = Instance.new("TextButton")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = game.Players.LocalPlayer
 
--- Parent ayarla
-ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.ResetOnSpawn = false
+-- GUI öğeleri
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Frame ayarları
-Frame.Parent = ScreenGui
-Frame.Size = UDim2.new(0, 300, 0, 150)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -75)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.BorderSizePixel = 0
+local frame = Instance.new("Frame")
+frame.Parent = screenGui
+frame.Size = UDim2.new(0.3, 0, 0.3, 0)
+frame.Position = UDim2.new(0.35, 0, 0.35, 0)
 
--- TextBox ayarları
-TextBox.Parent = Frame
-TextBox.PlaceholderText = "Takım ismini gir"
-TextBox.Size = UDim2.new(0, 200, 0, 40)
-TextBox.Position = UDim2.new(0.5, -100, 0, 20)
-TextBox.Text = ""
+local textBox = Instance.new("TextBox")
+textBox.Parent = frame
+textBox.Size = UDim2.new(0.8, 0, 0.3, 0)
+textBox.Position = UDim2.new(0.1, 0, 0.1, 0)
+textBox.PlaceholderText = "Takım adını girin"
+textBox.TextChanged:Connect(function()
+    -- TextBox'daki metin değiştiğinde yapılacak işlem
+end)
 
--- Button ayarları
-Button.Parent = Frame
-Button.Text = "Takıma Katıl"
-Button.Size = UDim2.new(0, 200, 0, 40)
-Button.Position = UDim2.new(0.5, -100, 0, 80)
-
--- Butona tıklanınca
-Button.MouseButton1Click:Connect(function()
-    local teamName = TextBox.Text
-    local team = game:GetService("Teams"):FindFirstChild(teamName)
-    if team then
-        local player = game:GetService("Players").LocalPlayer
-        player.Team = team
-        player:LoadCharacter()
-    else
-        warn("Takım bulunamadı: " .. teamName)
-    end
+local button = Instance.new("TextButton")
+button.Parent = frame
+button.Size = UDim2.new(0.8, 0, 0.3, 0)
+button.Position = UDim2.new(0.1, 0, 0.6, 0)
+button.Text = "Takıma Gir"
+button.MouseButton1Click:Connect(function()
+    local teamName = textBox.Text
+    -- Takım adını kullanarak GitHub'dan scripti yükle
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/nortex585/TeamChanger/main/TeamChanger.lua"))()
 end)
