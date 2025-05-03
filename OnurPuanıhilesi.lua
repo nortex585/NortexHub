@@ -31,6 +31,30 @@ button.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 button.Text = "Çalıştır"
 button.TextColor3 = Color3.fromRGB(255, 255, 255)
 
+-- GUI'nin hareket edebilmesi için gerekli kod
+local dragging = false
+local dragInput, mousePos, framePos
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        mousePos = input.Position
+        framePos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - mousePos
+        frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
+
 -- Button tıklama fonksiyonu
 button.MouseButton1Click:Connect(function()
     local onurPuanıAmount = tonumber(textBox.Text) -- TextBox'tan girilen değeri alıyoruz
