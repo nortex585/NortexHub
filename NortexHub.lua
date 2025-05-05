@@ -1,4 +1,4 @@
--- Nortex Hub GUI - Brookhaven Edition (Yükleme ekranı yok)
+-- Nortex Hub GUI - Brookhaven Editi                         
 
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
