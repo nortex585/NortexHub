@@ -205,7 +205,10 @@ tabBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- Harf harf yazı efekti
+local loadingDone = false
+local textDone = false
+
+-- Hoşgeldiniz yazısı animasyonu
 task.spawn(function()
 	local message = "Nortex Hub'a Hoşgeldiniz"
 	welcomeText.Text = ""
@@ -213,6 +216,26 @@ task.spawn(function()
 		welcomeText.Text = string.sub(message, 1, i)
 		wait(0.05)
 	end
+	textDone = true
+	if loadingDone then
+		loadingPanel:Destroy()
+		main.Visible = true
+	end
 end)
+
+-- Yükleme % barı animasyonu
+task.spawn(function()
+	for i = 0, 100 do
+		loadingBar:TweenSize(UDim2.new(i / 100, 0, 1, 0), "Out", "Linear", 0.1, true)
+		percentLabel.Text = "Yükleniyor... %" .. tostring(i)
+		wait(0.1)
+	end
+	loadingDone = true
+	if textDone then
+		loadingPanel:Destroy()
+		main.Visible = true
+	end
+end)
+
 
 
