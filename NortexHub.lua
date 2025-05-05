@@ -283,8 +283,3 @@ task.spawn(function()
 	main.Visible = true
 end)
 
--- Yükleme tamamlandıktan sonra GUI'yi göster
-	main.Visible = true
-	loadingPanel:Destroy()
-end)
-
