@@ -205,6 +205,62 @@ tabBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
+-- YÜKLEME PANELİ (Güncellenmiş ve tamamen görünür)
+local loadingPanel = Instance.new("Frame", gui)
+loadingPanel.Size = UDim2.new(0, 400, 0, 200)
+loadingPanel.Position = UDim2.new(0.5, -200, 0.5, -100)
+loadingPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+loadingPanel.ZIndex = 1000
+applyCorner(loadingPanel, 12)
+
+local welcomeText = Instance.new("TextLabel", loadingPanel)
+welcomeText.Size = UDim2.new(1, 0, 0, 40)
+welcomeText.Position = UDim2.new(0, 0, 0, 10)
+welcomeText.BackgroundTransparency = 1
+welcomeText.Text = "Nortex Hub'a Hoşgeldiniz"
+welcomeText.Font = Enum.Font.GothamBold
+welcomeText.TextSize = 20
+welcomeText.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeText.ZIndex = 1001
+
+-- Yüklenme çubuğu arka plan
+local loadingBG = Instance.new("Frame", loadingPanel)
+loadingBG.Size = UDim2.new(0.8, 0, 0, 20)
+loadingBG.Position = UDim2.new(0.1, 0, 0.5, 0)
+loadingBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+loadingBG.ZIndex = 1001
+applyCorner(loadingBG, 6)
+
+-- Yüklenme çubuğu içi
+local loadingBar = Instance.new("Frame", loadingBG)
+loadingBar.Size = UDim2.new(0, 0, 1, 0)
+loadingBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+loadingBar.ZIndex = 1002
+applyCorner(loadingBar, 6)
+
+-- Yüzde yazısı
+local percentLabel = Instance.new("TextLabel", loadingPanel)
+percentLabel.Size = UDim2.new(1, 0, 0, 30)
+percentLabel.Position = UDim2.new(0, 0, 0.65, 0)
+percentLabel.BackgroundTransparency = 1
+percentLabel.Text = "Yükleniyor... %0"
+percentLabel.Font = Enum.Font.Gotham
+percentLabel.TextSize = 16
+percentLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+percentLabel.ZIndex = 1001
+
+-- Powered by
+local powered = Instance.new("TextLabel", loadingPanel)
+powered.Size = UDim2.new(1, -10, 0, 20)
+powered.Position = UDim2.new(0, 5, 1, -25)
+powered.BackgroundTransparency = 1
+powered.Text = "Powered By: Nortex585"
+powered.Font = Enum.Font.Gotham
+powered.TextSize = 12
+powered.TextColor3 = Color3.fromRGB(150, 150, 150)
+powered.TextXAlignment = Enum.TextXAlignment.Left
+powered.ZIndex = 1001
+
 -- Yükleme animasyonu
 task.spawn(function()
 	for i = 0, 100, 1 do
@@ -212,8 +268,11 @@ task.spawn(function()
 		percentLabel.Text = "Yükleniyor... %" .. tostring(i)
 		wait(0.1)
 	end
+	loadingPanel:Destroy()
+	main.Visible = true
+end)
 
-	-- Yükleme tamamlandıktan sonra GUI'yi göster
+-- Yükleme tamamlandıktan sonra GUI'yi göster
 	main.Visible = true
 	loadingPanel:Destroy()
 end)
