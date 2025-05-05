@@ -205,14 +205,6 @@ tabBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- GUI container
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui")
-gui.Name = "NortexHub"
-gui.Parent = player:WaitForChild("PlayerGui")
-gui.ResetOnSpawn = false
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
 -- YÜKLEME PANELİ
 local loadingPanel = Instance.new("Frame")
 loadingPanel.Size = UDim2.new(0, 400, 0, 200)
