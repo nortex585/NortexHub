@@ -32,6 +32,23 @@ local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 10)
 titleCorner.Parent = title
 
+-- Kapatma Butonu
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 25, 0, 25)
+closeBtn.Position = UDim2.new(1, -30, 0, 5)
+closeBtn.Text = "X"
+closeBtn.BackgroundColor3 = Color3.new(1, 0.3, 0.3)
+closeBtn.TextColor3 = Color3.new(1, 1, 1)
+closeBtn.Parent = frame
+
+local closeUICorner = Instance.new("UICorner")
+closeUICorner.CornerRadius = UDim.new(0, 8)
+closeUICorner.Parent = closeBtn
+
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
 -- Hız kutusu
 local speedBox = Instance.new("TextBox")
 speedBox.Size = UDim2.new(1, -20, 0, 30)
@@ -86,26 +103,39 @@ velocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
 velocity.P = 1250
 
 local function startFlying()
-	flying = true
-	velocity.Parent = rootPart
+	if not flying then
+		flying = true
+		velocity = Instance.new("BodyVelocity")
+		velocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+		velocity.P = 1250
+		velocity.Velocity = Vector3.zero
+		velocity.Parent = rootPart
+	end
 end
 
 local function stopFlying()
 	flying = false
-	velocity:Destroy()
+	if velocity and velocity.Parent then
+		velocity:Destroy()
+	end
 end
 
 -- Input ile uçma yönü
 game:GetService("RunService").RenderStepped:Connect(function()
-	if flying then
+	if flying and velocity and velocity.Parent then
 		local dir = Vector3.zero
 		if uis:IsKeyDown(Enum.KeyCode.W) then dir = dir + workspace.CurrentCamera.CFrame.LookVector end
 		if uis:IsKeyDown(Enum.KeyCode.S) then dir = dir - workspace.CurrentCamera.CFrame.LookVector end
 		if uis:IsKeyDown(Enum.KeyCode.A) then dir = dir - workspace.CurrentCamera.CFrame.RightVector end
 		if uis:IsKeyDown(Enum.KeyCode.D) then dir = dir + workspace.CurrentCamera.CFrame.RightVector end
-		if uis:IsKeyDown(Enum.KeyCode.Space) then dir = dir + workspace.CurrentCamera.CFrame.UpVector end
-		if uis:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - workspace.CurrentCamera.CFrame.UpVector end
-		velocity.Velocity = dir.Unit * flySpeed
+		if uis:IsKeyDown(Enum.KeyCode.Space) then dir = dir + Vector3.new(0,1,0) end
+		if uis:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - Vector3.new(0,1,0) end
+
+		if dir.Magnitude > 0 then
+			velocity.Velocity = dir.Unit * flySpeed
+		else
+			velocity.Velocity = Vector3.zero
+		end
 	end
 end)
 
