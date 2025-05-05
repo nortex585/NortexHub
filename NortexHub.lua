@@ -205,23 +205,15 @@ tabBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- YÜKLEME ANİMASYONU (10 saniyede tamamlansın)
+-- Yükleme animasyonu
 task.spawn(function()
-	local duration = 10 -- saniye
-	local elapsed = 0
-	local interval = 0.1
-	local steps = duration / interval
-
-	for i = 0, steps do
-		local progress = i / steps
-		loadingBar.Size = UDim2.new(progress, 0, 1, 0)
-		percentLabel.Text = string.format("Yükleniyor... %%d", math.floor(progress * 100))
-		task.wait(interval)
+	for i = 0, 100, 1 do
+		loadingBar:TweenSize(UDim2.new(i / 100, 0, 1, 0), "Out", "Linear", 0.1, true)
+		percentLabel.Text = "Yükleniyor... %" .. tostring(i)
+		wait(0.1)
 	end
 
-	-- Yükleme bittiğinde ana GUI göster
-	loadingPanel:Destroy()
+	-- Yükleme tamamlandıktan sonra GUI'yi göster
 	main.Visible = true
+	loadingPanel:Destroy()
 end)
-
-
