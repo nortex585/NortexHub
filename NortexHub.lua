@@ -4,24 +4,21 @@ local button = Instance.new("TextButton")
 local uiCorner = Instance.new("UICorner")
 
 screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-screenGui.Name = "EnemyDropperGUI"
-
 button.Parent = screenGui
+
 button.Size = UDim2.new(0, 200, 0, 50)
 button.Position = UDim2.new(0.5, -100, 0.5, -25)
-button.Text = "Düşmanları Aşağı At!"
-button.BackgroundColor3 = Color3.new(0, 0, 0) -- Siyah
-button.TextColor3 = Color3.new(1, 1, 1) -- Beyaz yazı
+button.Text = "Düşmanları Yok Et!"
+button.BackgroundColor3 = Color3.new(0, 0, 0)
+button.TextColor3 = Color3.new(1, 1, 1)
 
--- Yuvarlak köşe ekle
 uiCorner.CornerRadius = UDim.new(0, 12)
 uiCorner.Parent = button
 
--- Sürüklenebilirlik için değişkenler
+-- Sürüklenebilir Buton
 local dragging = false
 local dragInput, mousePos, framePos
 
--- Sürükleme fonksiyonu
 local function updateInput(input)
 	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
 		local delta = input.Position - mousePos
@@ -56,17 +53,20 @@ end)
 
 game:GetService("UserInputService").InputChanged:Connect(updateInput)
 
--- Fonksiyon: Düşmanları haritanın altına ışınla
-local function dropEnemies()
+-- Düşmanları öldür
+local function destroyEnemies()
 	for _, enemy in pairs(workspace:GetDescendants()) do
 		if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
 			local isEnemy = enemy.Name ~= game.Players.LocalPlayer.Name and not game.Players:FindFirstChild(enemy.Name)
 			if isEnemy then
 				enemy:MoveTo(Vector3.new(0, -500, 0))
+				wait(0.2) -- Biraz zaman tanı
+				enemy.Humanoid.Health = 0 -- Öldür
+				-- Alternatif: enemy:BreakJoints() -- parçala
 			end
 		end
 	end
 end
 
--- Butona tıklanınca düşmanları düşür
-button.MouseButton1Click:Connect(dropEnemies)
+-- Butona tıklanınca çalıştır
+button.MouseButton1Click:Connect(destroyEnemies)
