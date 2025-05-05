@@ -272,9 +272,15 @@ task.spawn(function()
 		percentLabel.Text = "Yükleniyor... %" .. tostring(i)
 		wait(0.1)
 	end
-	loadingPanel:Destroy()
+
+	-- Yükleme ekranını düzgünce gizle ve yok et
+	loadingPanel:TweenSize(UDim2.new(0, 0, 0, 0), "Out", "Back", 0.4, true, function()
+		loadingPanel:Destroy()
+	end)
+
 	main.Visible = true
 end)
+
 
 
 
