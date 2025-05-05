@@ -281,6 +281,32 @@ task.spawn(function()
 	main.Visible = true
 end)
 
+task.spawn(function()
+	for i = 0, 100 do
+		loadingBar.Size = UDim2.new(i / 100, 0, 1, 0)
+		percentLabel.Text = "Yükleniyor... %" .. tostring(i)
+		wait(0.1)
+	end
+
+	-- Şeffaflaştırma geçişi
+	for transparency = 0, 1, 0.1 do
+		for _, v in pairs(loadingPanel:GetDescendants()) do
+			if v:IsA("TextLabel") or v:IsA("TextButton") then
+				v.TextTransparency = transparency
+				v.BackgroundTransparency = transparency
+			elseif v:IsA("Frame") then
+				v.BackgroundTransparency = transparency
+			end
+		end
+		wait(0.05)
+	end
+
+	-- Son olarak tamamen sil
+	loadingPanel:Destroy()
+	main.Visible = true
+end)
+
+
 
 
 
