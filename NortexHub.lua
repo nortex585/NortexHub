@@ -213,14 +213,6 @@ gui.Parent = player:WaitForChild("PlayerGui")
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Ana GUI panel (şimdilik gizli)
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 600, 0, 400)
-main.Position = UDim2.new(0.5, -300, 0.5, -200)
-main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-main.Visible = false
-main.Parent = gui
-
 -- YÜKLEME PANELİ
 local loadingPanel = Instance.new("Frame")
 loadingPanel.Size = UDim2.new(0, 400, 0, 200)
