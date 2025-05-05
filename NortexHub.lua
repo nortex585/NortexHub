@@ -205,13 +205,13 @@ tabBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- Yükleme % Barı animasyonu
+-- Harf harf yazı efekti
 task.spawn(function()
-	for i = 0, 100, 1 do
-		loadingBar:TweenSize(UDim2.new(i / 100, 0, 1, 0), "Out", "Linear", 0.1, true)
-		percentLabel.Text = "Yükleniyor... %" .. tostring(i)
-		wait(0.1)
+	local message = "Nortex Hub'a Hoşgeldiniz"
+	welcomeText.Text = ""
+	for i = 1, #message do
+		welcomeText.Text = string.sub(message, 1, i)
+		wait(0.05)
 	end
-	loadingPanel:Destroy()
-	main.Visible = true
 end)
+
