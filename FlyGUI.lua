@@ -96,33 +96,30 @@ local uis = game:GetService("UserInputService")
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local rootPart = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
 
-local velocity = Instance.new("BodyVelocity")
-velocity.Velocity = Vector3.zero
-velocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-velocity.P = 1250
+local bodyPosition = Instance.new("BodyPosition")
+bodyPosition.MaxForce = Vector3.new(400000, 400000, 400000)  -- Kuvveti çok yüksek tut
+bodyPosition.P = 10000
+bodyPosition.D = 500
+bodyPosition.Parent = rootPart
 
 local function startFlying()
 	if not flying then
 		flying = true
-		velocity = Instance.new("BodyVelocity")
-		velocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-		velocity.P = 1250
-		velocity.Velocity = Vector3.zero
-		velocity.Parent = rootPart
+		bodyPosition.Position = rootPart.Position
+		bodyPosition.Parent = rootPart
 	end
 end
 
 local function stopFlying()
 	flying = false
-	if velocity and velocity.Parent then
-		velocity:Destroy()
-	end
+	bodyPosition:Destroy()
 end
 
 -- Input ile uçma yönü
 game:GetService("RunService").RenderStepped:Connect(function()
-	if flying and velocity and velocity.Parent then
+	if flying then
 		local dir = Vector3.zero
 		if uis:IsKeyDown(Enum.KeyCode.W) then dir = dir + workspace.CurrentCamera.CFrame.LookVector end
 		if uis:IsKeyDown(Enum.KeyCode.S) then dir = dir - workspace.CurrentCamera.CFrame.LookVector end
@@ -132,9 +129,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 		if uis:IsKeyDown(Enum.KeyCode.LeftControl) then dir = dir - Vector3.new(0,1,0) end
 
 		if dir.Magnitude > 0 then
-			velocity.Velocity = dir.Unit * flySpeed
-		else
-			velocity.Velocity = Vector3.zero
+			bodyPosition.Position = rootPart.Position + dir.Unit * flySpeed
 		end
 	end
 end)
