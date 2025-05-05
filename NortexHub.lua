@@ -177,3 +177,47 @@ for i, name in ipairs(tabNames) do
         end
     end)
 end
+
+-- Loading Screen
+local loadingFrame = Instance.new("Frame", gui)
+loadingFrame.Size = UDim2.new(1, 0, 1, 0)
+loadingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+loadingFrame.ZIndex = 10
+loadingFrame.Name = "Loading"
+
+local welcomeLabel = Instance.new("TextLabel", loadingFrame)
+welcomeLabel.Size = UDim2.new(1, 0, 0, 100)
+welcomeLabel.Position = UDim2.new(0, 0, 0.4, 0)
+welcomeLabel.Text = "Nortex Hub'a Hoşgeldiniz"
+welcomeLabel.Font = Enum.Font.GothamBold
+welcomeLabel.TextSize = 24
+welcomeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+welcomeLabel.BackgroundTransparency = 1
+
+-- Loading bar
+local loadingBarBG = Instance.new("Frame", loadingFrame)
+loadingBarBG.Size = UDim2.new(0.6, 0, 0, 20)
+loadingBarBG.Position = UDim2.new(0.2, 0, 0.55, 0)
+loadingBarBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+loadingBarBG.BorderSizePixel = 0
+Instance.new("UICorner", loadingBarBG)
+
+local loadingBar = Instance.new("Frame", loadingBarBG)
+loadingBar.Size = UDim2.new(0, 0, 1, 0)
+loadingBar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+loadingBar.BorderSizePixel = 0
+Instance.new("UICorner", loadingBar)
+
+-- Loading animation (10 saniyelik)
+task.spawn(function()
+	for i = 1, 100 do
+		loadingBar:TweenSize(UDim2.new(i/100, 0, 1, 0), "Out", "Linear", 0.1, true)
+		wait(0.1)
+	end
+	loadingFrame:Destroy()
+	main.Visible = true
+end)
+
+-- Başta GUI gizli
+main.Visible = false
+miniIcon.Visible = false
