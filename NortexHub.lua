@@ -205,72 +205,15 @@ tabBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- YÜKLEME PANELİ
-local loadingPanel = Instance.new("Frame")
-loadingPanel.Size = UDim2.new(0, 400, 0, 200)
-loadingPanel.Position = UDim2.new(0.5, -200, 0.5, -100)
-loadingPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-loadingPanel.Parent = gui
-local uic = Instance.new("UICorner", loadingPanel)
-uic.CornerRadius = UDim.new(0, 12)
-
--- Hoşgeldiniz
-local welcomeText = Instance.new("TextLabel")
-welcomeText.Size = UDim2.new(1, 0, 0, 40)
-welcomeText.Position = UDim2.new(0, 0, 0, 10)
-welcomeText.BackgroundTransparency = 1
-welcomeText.Text = "Nortex Hub'a Hoşgeldiniz"
-welcomeText.Font = Enum.Font.GothamBold
-welcomeText.TextSize = 20
-welcomeText.TextColor3 = Color3.fromRGB(255, 255, 255)
-welcomeText.Parent = loadingPanel
-
--- % bar arka plan
-local barBG = Instance.new("Frame")
-barBG.Size = UDim2.new(0.8, 0, 0, 20)
-barBG.Position = UDim2.new(0.1, 0, 0.5, 0)
-barBG.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-barBG.Parent = loadingPanel
-Instance.new("UICorner", barBG).CornerRadius = UDim.new(0, 6)
-
--- % bar iç
-local bar = Instance.new("Frame")
-bar.Size = UDim2.new(0, 0, 1, 0)
-bar.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-bar.Parent = barBG
-Instance.new("UICorner", bar).CornerRadius = UDim.new(0, 6)
-
--- % metin
-local percentText = Instance.new("TextLabel")
-percentText.Size = UDim2.new(1, 0, 0, 30)
-percentText.Position = UDim2.new(0, 0, 0.7, 0)
-percentText.BackgroundTransparency = 1
-percentText.Text = "Yükleniyor... %0"
-percentText.Font = Enum.Font.Gotham
-percentText.TextSize = 16
-percentText.TextColor3 = Color3.fromRGB(200, 200, 200)
-percentText.Parent = loadingPanel
-
--- Sol alt köşe metni
-local poweredText = Instance.new("TextLabel")
-poweredText.Size = UDim2.new(1, -10, 0, 20)
-poweredText.Position = UDim2.new(0, 5, 1, -25)
-poweredText.BackgroundTransparency = 1
-poweredText.Text = "Powered By: Nortex585"
-poweredText.Font = Enum.Font.Gotham
-poweredText.TextSize = 12
-poweredText.TextColor3 = Color3.fromRGB(150, 150, 150)
-poweredText.TextXAlignment = Enum.TextXAlignment.Left
-poweredText.Parent = loadingPanel
-
--- ANİMASYON (10 saniye)
+-- YÜKLEME TAMAMLAMA (Yükleme ekranını göster ve GUI'yi aç)
 task.spawn(function()
-	for i = 0, 100 do
-		bar:TweenSize(UDim2.new(i / 100, 0, 1, 0), "Out", "Linear", 0.1, true)
-		percentText.Text = "Yükleniyor... %" .. i
-		wait(0.1)
+	for i = 1, 100 do
+		loadingBar.Size = UDim2.new(i / 100, 0, 1, 0)
+		percentLabel.Text = "Yükleniyor... %" .. i
+		task.wait(0.03) -- hızı ayarlayabilirsin
 	end
 
+	-- Yükleme tamamlandıktan sonra paneli kapat ve GUI'yi aç
 	loadingPanel:Destroy()
 	main.Visible = true
 end)
