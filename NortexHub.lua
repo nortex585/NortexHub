@@ -211,13 +211,3 @@ for i, name in ipairs(tabNames) do
 		end
 	end)
 end
-
--- Yükleme animasyonu başlat
-task.spawn(function()
-	for i = 1, 100 do
-		loadingBar:TweenSize(UDim2.new(i/100, 0, 1, 0), "Out", "Linear", 0.1, true)
-		wait(0.1)
-	end
-	loadingFrame:Destroy()
-	main.Visible = true
-end)
