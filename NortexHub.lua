@@ -61,14 +61,6 @@ welcomeText.Font = Enum.Font.GothamBold
 welcomeText.TextSize = 20
 welcomeText.TextColor3 = Color3.fromRGB(255, 255, 255)
 
--- Loading bar background
-local loadingBG = Instance.new("Frame", loadingPanel)
-loadingBG.Size = UDim2.new(0.8, 0, 0, 20)
-loadingBG.Position = UDim2.new(0.1, 0, 0.55, 0)
-loadingBG.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-loadingBG.BorderSizePixel = 0
-applyCorner(loadingBG, 6)
-
 -- Loading bar fill
 local loadingBar = Instance.new("Frame", loadingBG)
 loadingBar.Size = UDim2.new(0, 0, 1, 0)
