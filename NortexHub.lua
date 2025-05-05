@@ -5,17 +5,19 @@ local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "NortexHub"
 gui.ResetOnSpawn = false
 
--- Mini icon (Küçültülmüş)
+-- Mini icon (Kare & Sürüklenebilir)
 local miniIcon = Instance.new("TextButton")
-miniIcon.Size = UDim2.new(0, 100, 0, 40)
+miniIcon.Size = UDim2.new(0, 40, 0, 40) -- Kare boyut
 miniIcon.Position = UDim2.new(0, 10, 0, 10)
-miniIcon.Text = "Nortex Hub"
-miniIcon.Visible = false
-miniIcon.Parent = gui
-miniIcon.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+miniIcon.Text = "NH" -- Kısaltılmış metin
+miniIcon.TextSize = 16
+miniIcon.Font = Enum.Font.GothamBold
 miniIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+miniIcon.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 miniIcon.BorderSizePixel = 0
+miniIcon.Visible = false
 Instance.new("UICorner", miniIcon)
+miniIcon.Parent = gui
 
 -- Sürüklenebilirlik fonksiyonu
 local function makeDraggable(frame)
@@ -58,7 +60,6 @@ main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 main.Name = "MainFrame"
 main.BorderSizePixel = 0
 Instance.new("UICorner", main)
-makeDraggable(main)
 
 -- Başlık
 local title = Instance.new("TextLabel", main)
@@ -69,9 +70,12 @@ title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.BorderSizePixel = 0
+title.Name = "TitleBar"
 Instance.new("UICorner", title)
 
--- Kapatma Butonu
+makeDraggable(main)
+
+-- Kapat (X)
 local closeBtn = Instance.new("TextButton", main)
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -35, 0, 5)
@@ -83,7 +87,7 @@ closeBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn)
 
--- Küçültme Butonu
+-- Küçült (-)
 local miniBtn = Instance.new("TextButton", main)
 miniBtn.Size = UDim2.new(0, 30, 0, 30)
 miniBtn.Position = UDim2.new(1, -70, 0, 5)
@@ -110,7 +114,7 @@ miniIcon.MouseButton1Click:Connect(function()
 	miniIcon.Visible = false
 end)
 
--- Sol Menü
+-- Sol menü
 local tabHolder = Instance.new("Frame", main)
 tabHolder.Size = UDim2.new(0, 120, 1, -40)
 tabHolder.Position = UDim2.new(0, 0, 0, 40)
@@ -118,7 +122,7 @@ tabHolder.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 tabHolder.BorderSizePixel = 0
 Instance.new("UICorner", tabHolder)
 
--- İçerik Alanı
+-- İçerik alanı
 local contentHolder = Instance.new("Frame", main)
 contentHolder.Size = UDim2.new(1, -120, 1, -40)
 contentHolder.Position = UDim2.new(0, 120, 0, 40)
@@ -126,7 +130,7 @@ contentHolder.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentHolder.BorderSizePixel = 0
 Instance.new("UICorner", contentHolder)
 
--- Sekmeler
+-- Sekme butonları
 local tabNames = {"Discord", "Farm", "Shop", "Mini Games", "Player", "Teleports", "Misc"}
 
 for i, name in ipairs(tabNames) do
@@ -156,10 +160,10 @@ for i, name in ipairs(tabNames) do
             Instance.new("UICorner", discordBtn)
 
             discordBtn.MouseButton1Click:Connect(function()
-                setclipboard("https://discord.gg/YOUR_INVITE_CODE")
+                setclipboard("https://discord.gg/YOUR_INVITE_CODE") -- Linki buraya ekle
                 game.StarterGui:SetCore("SendNotification", {
                     Title = "Discord",
-                    Text = "Link kopyalandı!",
+                    Text = "Link kopyalandı! Tarayıcıya yapıştır.",
                     Duration = 5
                 })
             end)
