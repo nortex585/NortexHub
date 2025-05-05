@@ -1,11 +1,11 @@
--- Nortex Hub GUI - Brookhaven Edition (Düzenlenmiş)
+-- Nortex Hub GUI - Brookhaven Edition (Yükleme ekranı yok)
 
 local player = game.Players.LocalPlayer
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "NortexHub"
 gui.ResetOnSpawn = false
 
--- Mini icon (Kare & Sürüklenebilir)
+-- Mini icon (Küçültülmüş)
 local miniIcon = Instance.new("TextButton")
 miniIcon.Size = UDim2.new(0, 100, 0, 40)
 miniIcon.Position = UDim2.new(0, 10, 0, 10)
@@ -17,7 +17,7 @@ miniIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
 miniIcon.BorderSizePixel = 0
 Instance.new("UICorner", miniIcon)
 
--- Sürüklenebilir mini icon
+-- Sürüklenebilirlik fonksiyonu
 local function makeDraggable(frame)
 	local UIS = game:GetService("UserInputService")
 	local dragging, dragInput, dragStart, startPos
@@ -50,7 +50,7 @@ local function makeDraggable(frame)
 end
 makeDraggable(miniIcon)
 
--- Main GUI
+-- Ana GUI
 local main = Instance.new("Frame", gui)
 main.Size = UDim2.new(0, 600, 0, 400)
 main.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -58,8 +58,9 @@ main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 main.Name = "MainFrame"
 main.BorderSizePixel = 0
 Instance.new("UICorner", main)
+makeDraggable(main)
 
--- Title Bar
+-- Başlık
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -68,13 +69,9 @@ title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.BorderSizePixel = 0
-title.Name = "TitleBar"
 Instance.new("UICorner", title)
 
--- Sürüklenebilirlik (başlığa basınca)
-makeDraggable(main)
-
--- Close Button (X)
+-- Kapatma Butonu
 local closeBtn = Instance.new("TextButton", main)
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -35, 0, 5)
@@ -86,7 +83,7 @@ closeBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 closeBtn.BorderSizePixel = 0
 Instance.new("UICorner", closeBtn)
 
--- Minimize Button (-)
+-- Küçültme Butonu
 local miniBtn = Instance.new("TextButton", main)
 miniBtn.Size = UDim2.new(0, 30, 0, 30)
 miniBtn.Position = UDim2.new(1, -70, 0, 5)
@@ -100,7 +97,7 @@ Instance.new("UICorner", miniBtn)
 
 -- Buton işlevleri
 closeBtn.MouseButton1Click:Connect(function()
-	gui:Destroy() -- GUI tamamen kapanır
+	gui:Destroy()
 end)
 
 miniBtn.MouseButton1Click:Connect(function()
@@ -121,6 +118,7 @@ tabHolder.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 tabHolder.BorderSizePixel = 0
 Instance.new("UICorner", tabHolder)
 
+-- İçerik Alanı
 local contentHolder = Instance.new("Frame", main)
 contentHolder.Size = UDim2.new(1, -120, 1, -40)
 contentHolder.Position = UDim2.new(0, 120, 0, 40)
@@ -157,12 +155,11 @@ for i, name in ipairs(tabNames) do
             discordBtn.BorderSizePixel = 0
             Instance.new("UICorner", discordBtn)
 
-            -- Link aç (sen linki ekle aşağıya)
             discordBtn.MouseButton1Click:Connect(function()
-                setclipboard("https://discord.gg/YOUR_INVITE_CODE") -- <== Linki buraya koy
+                setclipboard("https://discord.gg/YOUR_INVITE_CODE")
                 game.StarterGui:SetCore("SendNotification", {
                     Title = "Discord",
-                    Text = "Link kopyalandı! Tarayıcıya yapıştır.",
+                    Text = "Link kopyalandı!",
                     Duration = 5
                 })
             end)
