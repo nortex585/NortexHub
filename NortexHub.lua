@@ -3,7 +3,7 @@ local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "NortexHub"
 gui.ResetOnSpawn = false
 
--- Mini icon (NH - Kare)
+-- Mini icon (NH)
 local miniIcon = Instance.new("TextButton")
 miniIcon.Size = UDim2.new(0, 40, 0, 40)
 miniIcon.Position = UDim2.new(0, 10, 0, 10)
@@ -15,7 +15,7 @@ miniIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
 miniIcon.BorderSizePixel = 0
 Instance.new("UICorner", miniIcon)
 
--- Sürüklenebilir
+-- Sürüklenebilirlik
 local function makeDraggable(frame)
 	local UIS = game:GetService("UserInputService")
 	local dragging, dragInput, dragStart, startPos
@@ -48,7 +48,7 @@ local function makeDraggable(frame)
 end
 makeDraggable(miniIcon)
 
--- Main GUI
+-- Ana GUI
 local main = Instance.new("Frame", gui)
 main.Size = UDim2.new(0, 600, 0, 400)
 main.Position = UDim2.new(0.1, 0, 0.1, 0)
@@ -57,7 +57,6 @@ main.Name = "MainFrame"
 main.BorderSizePixel = 0
 Instance.new("UICorner", main)
 
--- Title
 local title = Instance.new("TextLabel", main)
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -70,7 +69,6 @@ Instance.new("UICorner", title)
 
 makeDraggable(main)
 
--- Kapat & Küçült
 local closeBtn = Instance.new("TextButton", main)
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -35, 0, 5)
@@ -107,7 +105,7 @@ miniIcon.MouseButton1Click:Connect(function()
 	miniIcon.Visible = false
 end)
 
--- Sekme sistemi
+-- Sol Menü
 local tabHolder = Instance.new("Frame", main)
 tabHolder.Size = UDim2.new(0, 120, 1, -40)
 tabHolder.Position = UDim2.new(0, 0, 0, 40)
@@ -122,112 +120,88 @@ contentHolder.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentHolder.BorderSizePixel = 0
 Instance.new("UICorner", contentHolder)
 
--- Sekme isimleri
+-- Sekmeler
 local tabNames = {"Discord", "Avatar", "Shop", "Mini Games", "Player", "Teleports", "Misc"}
 
 for i, name in ipairs(tabNames) do
-    local btn = Instance.new("TextButton", tabHolder)
-    btn.Size = UDim2.new(1, 0, 0, 30)
-    btn.Position = UDim2.new(0, 0, 0, (i - 1) * 30)
-    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    btn.BorderSizePixel = 0
-    btn.Font = Enum.Font.Gotham
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.TextSize = 14
-    Instance.new("UICorner", btn)
+	local btn = Instance.new("TextButton", tabHolder)
+	btn.Size = UDim2.new(1, 0, 0, 30)
+	btn.Position = UDim2.new(0, 0, 0, (i - 1) * 30)
+	btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	btn.BorderSizePixel = 0
+	btn.Font = Enum.Font.Gotham
+	btn.Text = name
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 14
+	Instance.new("UICorner", btn)
 
-    btn.MouseButton1Click:Connect(function()
-        contentHolder:ClearAllChildren()
-        if name == "Discord" then
-            local discordBtn = Instance.new("TextButton", contentHolder)
-            discordBtn.Size = UDim2.new(0, 200, 0, 40)
-            discordBtn.Position = UDim2.new(0, 20, 0, 20)
-            discordBtn.Text = "Join Discord Group"
-            discordBtn.Font = Enum.Font.GothamBold
-            discordBtn.TextSize = 14
-            discordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            discordBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-            discordBtn.BorderSizePixel = 0
-            Instance.new("UICorner", discordBtn)
+	btn.MouseButton1Click:Connect(function()
+		contentHolder:ClearAllChildren()
+		if name == "Discord" then
+			local discordBtn = Instance.new("TextButton", contentHolder)
+			discordBtn.Size = UDim2.new(0, 200, 0, 40)
+			discordBtn.Position = UDim2.new(0, 20, 0, 20)
+			discordBtn.Text = "Join Discord Group"
+			discordBtn.Font = Enum.Font.GothamBold
+			discordBtn.TextSize = 14
+			discordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			discordBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+			discordBtn.BorderSizePixel = 0
+			Instance.new("UICorner", discordBtn)
 
-            discordBtn.MouseButton1Click:Connect(function()
-                setclipboard("https://discord.gg/YOUR_INVITE_CODE")
-                game.StarterGui:SetCore("SendNotification", {
-                    Title = "Discord",
-                    Text = "Link kopyalandı!",
-                    Duration = 5
-                })
-            end)
+			discordBtn.MouseButton1Click:Connect(function()
+				setclipboard("https://discord.gg/YOUR_INVITE_CODE")
+				game.StarterGui:SetCore("SendNotification", {
+					Title = "Discord",
+					Text = "Link kopyalandı!",
+					Duration = 5
+				})
+			end)
+		elseif name == "Avatar" then
+			local function createAvatarBtn(text, posY, callback)
+				local btn = Instance.new("TextButton", contentHolder)
+				btn.Size = UDim2.new(0, 200, 0, 40)
+				btn.Position = UDim2.new(0, 20, 0, posY)
+				btn.Text = text
+				btn.Font = Enum.Font.GothamBold
+				btn.TextSize = 14
+				btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+				btn.BorderSizePixel = 0
+				Instance.new("UICorner", btn)
+				btn.MouseButton1Click:Connect(callback)
+			end
 
-        elseif name == "Avatar" then
-            -- RIGHT KORBLOX
-            local rightBtn = Instance.new("TextButton", contentHolder)
-            rightBtn.Size = UDim2.new(0, 200, 0, 40)
-            rightBtn.Position = UDim2.new(0, 20, 0, 20)
-            rightBtn.Text = "Right Korblox"
-            rightBtn.Font = Enum.Font.GothamBold
-            rightBtn.TextSize = 14
-            rightBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            rightBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-            Instance.new("UICorner", rightBtn)
+			createAvatarBtn("Right Korblox", 20, function()
+				local leg = player.Character and player.Character:FindFirstChild("RightLowerLeg")
+				if leg then leg.Transparency = 1 end
+			end)
 
-            rightBtn.MouseButton1Click:Connect(function()
-                local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                local desc = humanoid and humanoid:GetAppliedDescription()
-                if desc then
-                    desc.RightLeg = 134082579 -- Korblox Right Leg
-                    humanoid:ApplyDescription(desc)
-                end
-            end)
+			createAvatarBtn("Left Korblox", 70, function()
+				local leg = player.Character and player.Character:FindFirstChild("LeftLowerLeg")
+				if leg then leg.Transparency = 1 end
+			end)
 
-            -- LEFT KORBLOX
-            local leftBtn = Instance.new("TextButton", contentHolder)
-            leftBtn.Size = UDim2.new(0, 200, 0, 40)
-            leftBtn.Position = UDim2.new(0, 20, 0, 70)
-            leftBtn.Text = "Left Korblox"
-            leftBtn.Font = Enum.Font.GothamBold
-            leftBtn.TextSize = 14
-            leftBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            leftBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-            Instance.new("UICorner", leftBtn)
-
-            leftBtn.MouseButton1Click:Connect(function()
-                local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                local desc = humanoid and humanoid:GetAppliedDescription()
-                if desc then
-                    desc.LeftLeg = 134082579 -- Korblox Left Leg (aynı asset ID)
-                    humanoid:ApplyDescription(desc)
-                end
-            end)
-
-            -- HEADLESS
-            local headlessBtn = Instance.new("TextButton", contentHolder)
-            headlessBtn.Size = UDim2.new(0, 200, 0, 40)
-            headlessBtn.Position = UDim2.new(0, 20, 0, 120)
-            headlessBtn.Text = "Headless"
-            headlessBtn.Font = Enum.Font.GothamBold
-            headlessBtn.TextSize = 14
-            headlessBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            headlessBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-            Instance.new("UICorner", headlessBtn)
-
-            headlessBtn.MouseButton1Click:Connect(function()
-                local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                local desc = humanoid and humanoid:GetAppliedDescription()
-                if desc then
-                    desc.Head = 0 -- Headless ID (0 = görünmez)
-                    humanoid:ApplyDescription(desc)
-                end
-            end)
-        else
-            local label = Instance.new("TextLabel", contentHolder)
-            label.Size = UDim2.new(1, 0, 0, 30)
-            label.Text = name .. " sekmesi hazırlanıyor..."
-            label.TextColor3 = Color3.fromRGB(255, 255, 255)
-            label.Font = Enum.Font.Gotham
-            label.TextSize = 16
-            label.BackgroundTransparency = 1
-        end
-    end)
+			createAvatarBtn("Headless", 120, function()
+				local char = player.Character
+				if char then
+					local head = char:FindFirstChild("Head")
+					if head then
+						head.Transparency = 1
+						if head:FindFirstChild("face") then
+							head.face:Destroy()
+						end
+					end
+				end
+			end)
+		else
+			local label = Instance.new("TextLabel", contentHolder)
+			label.Size = UDim2.new(1, 0, 0, 30)
+			label.Text = name .. " sekmesi hazırlanıyor..."
+			label.TextColor3 = Color3.fromRGB(255, 255, 255)
+			label.Font = Enum.Font.Gotham
+			label.TextSize = 16
+			label.BackgroundTransparency = 1
+		end
+	end)
 end
