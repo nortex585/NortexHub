@@ -185,3 +185,29 @@ for i, name in ipairs(tabNames) do
 		end
 	end)
 end
+
+-- RP İsmine "Nortex Hub Kullanıcısı" yaz
+local function setRPName()
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local rpBillboard = char:WaitForChild("Head"):FindFirstChild("OriginalSize") and char:FindFirstChild("Head"):FindFirstChildWhichIsA("BillboardGui")
+
+    if rpBillboard then
+        for _, obj in ipairs(rpBillboard:GetDescendants()) do
+            if obj:IsA("TextLabel") and string.find(obj.Text, "RP") then
+                obj.Text = "Nortex Hub Kullanıcısı"
+            end
+        end
+    end
+end
+
+-- Karakter yüklendiğinde RP ismini ayarla
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+    wait(1) -- karakterin tam yüklenmesi için biraz bekleyelim
+    setRPName()
+end)
+
+-- Eğer karakter zaten yüklüyse hemen uygula
+if game.Players.LocalPlayer.Character then
+    setRPName()
+end
