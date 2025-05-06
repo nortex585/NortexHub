@@ -1,72 +1,54 @@
--- GUI ve Buton Oluştur
-local screenGui = Instance.new("ScreenGui")
+-- LocalScript içinde kullanılacak
+
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Ana ekran GUI'si
+local screenGui = Instance.new("ScreenGui", playerGui)
+screenGui.Name = "ResetWheelGUI"
+screenGui.ResetOnSpawn = false
+
+-- Ana çerçeve
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 50)
+frame.Position = UDim2.new(0.5, -100, 0.3, 0)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Draggable = true
+frame.Active = true
+frame.Parent = screenGui
+
+-- Sürükleme çubuğu
+local dragBar = Instance.new("TextLabel")
+dragBar.Size = UDim2.new(1, 0, 0, 20)
+dragBar.Position = UDim2.new(0, 0, 0, 0)
+dragBar.Text = "Özel Çark Sıfırla"
+dragBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+dragBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+dragBar.Parent = frame
+
+-- Buton
 local button = Instance.new("TextButton")
-local uiCorner = Instance.new("UICorner")
+button.Size = UDim2.new(1, -10, 0, 25)
+button.Position = UDim2.new(0, 5, 0, 22)
+button.Text = "Süreyi Sıfırla"
+button.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Font = Enum.Font.Gotham
+button.TextSize = 14
+button.Parent = frame
 
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-button.Parent = screenGui
+-- UICorner (butona yumuşak köşe)
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = button
 
-button.Size = UDim2.new(0, 200, 0, 50)
-button.Position = UDim2.new(0.5, -100, 0.5, -25)
-button.Text = "Düşmanları Yok Et!"
-button.BackgroundColor3 = Color3.new(0, 0, 0)
-button.TextColor3 = Color3.new(1, 1, 1)
-
-uiCorner.CornerRadius = UDim.new(0, 12)
-uiCorner.Parent = button
-
--- Sürüklenebilir Buton
-local dragging = false
-local dragInput, mousePos, framePos
-
-local function updateInput(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta = input.Position - mousePos
-		button.Position = UDim2.new(
-			framePos.X.Scale,
-			framePos.X.Offset + delta.X,
-			framePos.Y.Scale,
-			framePos.Y.Offset + delta.Y
-		)
-	end
-end
-
-button.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		mousePos = input.Position
-		framePos = button.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
+-- Butona basınca çalışacak kod
+button.MouseButton1Click:Connect(function()
+	local value = player:FindFirstChild("SpecialWheelTime")
+	if value and value:IsA("IntValue") then
+		value.Value = 0
+		print("Özel çark süresi sıfırlandı.")
+	else
+		warn("SpecialWheelTime değeri bulunamadı.")
 	end
 end)
-
-button.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement then
-		dragInput = input
-	end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(updateInput)
-
--- Düşmanları öldür
-local function destroyEnemies()
-	for _, enemy in pairs(workspace:GetDescendants()) do
-		if enemy:IsA("Model") and enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") then
-			local isEnemy = enemy.Name ~= game.Players.LocalPlayer.Name and not game.Players:FindFirstChild(enemy.Name)
-			if isEnemy then
-				enemy:MoveTo(Vector3.new(0, -500, 0))
-				wait(0.2) -- Biraz zaman tanı
-				enemy.Humanoid.Health = 0 -- Öldür
-				-- Alternatif: enemy:BreakJoints() -- parçala
-			end
-		end
-	end
-end
-
--- Butona tıklanınca çalıştır
-button.MouseButton1Click:Connect(destroyEnemies)
