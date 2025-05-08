@@ -1,61 +1,69 @@
+-- GUI Oluştur
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+local gui = Instance.new("ScreenGui")
 gui.Name = "HKGui"
 gui.ResetOnSpawn = false
+gui.Parent = PlayerGui
 
 -- Ana Frame
-local frame = Instance.new("Frame", gui)
+local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 200)
-frame.Position = UDim2.new(0.1, 0, 0.1, 0)
+frame.Position = UDim2.new(0.05, 0, 0.1, 0)
 frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.Active = true
 frame.Draggable = true
+frame.Parent = gui
 Instance.new("UICorner", frame)
 
 -- Üst Bar
-local topBar = Instance.new("TextLabel", frame)
+local topBar = Instance.new("TextLabel")
+topBar.Name = "TopBar"
 topBar.Size = UDim2.new(1, 0, 0, 30)
 topBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 topBar.Text = "HK MOD PANEL"
 topBar.TextColor3 = Color3.new(1, 1, 1)
 topBar.Font = Enum.Font.SourceSansBold
 topBar.TextSize = 14
-topBar.Name = "TopBar"
+topBar.Parent = frame
 Instance.new("UICorner", topBar)
 
 -- Kapat Butonu
-local closeBtn = Instance.new("TextButton", frame)
+local closeBtn = Instance.new("TextButton")
 closeBtn.Text = "X"
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -60, 0, 0)
 closeBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeBtn.Parent = frame
 Instance.new("UICorner", closeBtn)
 
 -- Küçültme Butonu
-local minimizeBtn = Instance.new("TextButton", frame)
+local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Text = "_"
 minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
 minimizeBtn.Position = UDim2.new(1, -30, 0, 0)
 minimizeBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+minimizeBtn.Parent = frame
 Instance.new("UICorner", minimizeBtn)
 
 -- Anahtar Butonu
-local toggle = false
-local toggleBtn = Instance.new("TextButton", frame)
+local toggleBtn = Instance.new("TextButton")
 toggleBtn.Text = "OFF"
 toggleBtn.Size = UDim2.new(0, 100, 0, 40)
 toggleBtn.Position = UDim2.new(0.5, -50, 0.5, -20)
 toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+toggleBtn.Parent = frame
 Instance.new("UICorner", toggleBtn)
 
 -- Türk Bayrağı
-local flag = Instance.new("ImageLabel", frame)
+local flag = Instance.new("ImageLabel")
 flag.Size = UDim2.new(0, 40, 0, 25)
 flag.Position = UDim2.new(0, 5, 1, -30)
-flag.Image = "rbxassetid://7229874622" -- Türk bayrağı asset ID (güncel)
+flag.Image = "rbxassetid://7229874622"
 flag.BackgroundTransparency = 1
+flag.Parent = frame
 
 -- Sekme Gizleme Fonksiyonu
 local isMinimized = false
@@ -84,26 +92,17 @@ closeBtn.MouseButton1Click:Connect(function()
 	gui:Destroy()
 end)
 
--- ON/OFF Fonksiyonu
+-- Anahtar ON/OFF
+local toggle = false
 local function randomJumpAndShoot()
 	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 	local humanoid = char:FindFirstChildOfClass("Humanoid")
 	while toggle do
 		if humanoid then
 			humanoid.Jump = true
-			humanoid.WalkSpeed = math.random(25, 60)
+			humanoid.WalkSpeed = math.random(30, 70)
 		end
 		wait(0.5)
-	end
-end
-
--- Aimbot (örnek sistem)
-local function simpleAimbot()
-	for _, plr in pairs(Players:GetPlayers()) do
-		if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			-- Niye hedef alır gibi örnek sistem
-			print("Aiming at", plr.Name)
-		end
 	end
 end
 
@@ -112,6 +111,5 @@ toggleBtn.MouseButton1Click:Connect(function()
 	toggleBtn.Text = toggle and "ON" or "OFF"
 	if toggle then
 		task.spawn(randomJumpAndShoot)
-		task.spawn(simpleAimbot)
 	end
 end)
