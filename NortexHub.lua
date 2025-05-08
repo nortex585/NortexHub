@@ -70,10 +70,13 @@ local isMinimized = false
 minimizeBtn.MouseButton1Click:Connect(function()
 	if not isMinimized then
 		for _, obj in pairs(frame:GetChildren()) do
-			if obj ~= topBar and obj ~= closeBtn and obj ~= minimizeBtn then
+			if obj:IsA("TextButton") or obj:IsA("ImageLabel") then
 				obj.Visible = false
 			end
 		end
+		topBar.Visible = true
+		closeBtn.Visible = true
+		minimizeBtn.Visible = true
 		frame.Size = UDim2.new(0, 300, 0, 30)
 		minimizeBtn.Text = "+"
 		isMinimized = true
@@ -94,18 +97,34 @@ end)
 
 -- Anahtar ON/OFF
 local toggle = false
-local aimbotThread
+local behaviorThread
+
+local function getClosestPlayer()
+	local closestPlayer = nil
+	local shortestDistance = math.huge
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).magnitude
+			if distance < shortestDistance then
+				shortestDistance = distance
+				closestPlayer = player
+			end
+		end
+	end
+	return closestPlayer
+end
 
 local function startBehavior()
 	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local humanoid = char:FindFirstChildOfClass("Humanoid")
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Aimbot-V3/main/src/Aimbot.lua"))()
+	local humanoid = char:WaitForChild("Humanoid")
 	while toggle do
-		if humanoid then
-			humanoid.Jump = true
-			humanoid.WalkSpeed = math.random(30, 70)
+		humanoid.Jump = true
+		humanoid.WalkSpeed = 60
+		local closest = getClosestPlayer()
+		if closest and closest.Character and closest.Character:FindFirstChild("HumanoidRootPart") then
+			char:SetPrimaryPartCFrame(CFrame.new(char.PrimaryPart.Position, closest.Character.HumanoidRootPart.Position))
 		end
-		wait(0.4)
+		wait(0.3)
 	end
 end
 
@@ -113,11 +132,11 @@ toggleBtn.MouseButton1Click:Connect(function()
 	toggle = not toggle
 	toggleBtn.Text = toggle and "ON" or "OFF"
 	if toggle then
-		aimbotThread = task.spawn(startBehavior)
+		behaviorThread = task.spawn(startBehavior)
 	else
-		if aimbotThread then
-			coroutine.close(aimbotThread)
-			aimbotThread = nil
+		if behaviorThread then
+			task.cancel(behaviorThread)
+			behaviorThread = nil
 		end
 		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 		local humanoid = char:FindFirstChildOfClass("Humanoid")
