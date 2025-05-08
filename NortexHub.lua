@@ -2,7 +2,8 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local gui = Instance.new("ScreenGui")
 gui.Name = "HKGui"
 gui.ResetOnSpawn = false
@@ -114,17 +115,36 @@ local function getClosestPlayer()
 	return closestPlayer
 end
 
+local function simulateShoot(target)
+	local args = {
+		[1] = target
+	}
+	local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+	if tool and tool:FindFirstChild("RemoteEvent") then
+		tool.RemoteEvent:FireServer(unpack(args))
+	end
+end
+
 local function startBehavior()
 	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 	local humanoid = char:WaitForChild("Humanoid")
+	humanoid.WalkSpeed = 50
 	while toggle do
 		humanoid.Jump = true
-		humanoid.WalkSpeed = 60
 		local closest = getClosestPlayer()
 		if closest and closest.Character and closest.Character:FindFirstChild("HumanoidRootPart") then
-			char:SetPrimaryPartCFrame(CFrame.new(char.PrimaryPart.Position, closest.Character.HumanoidRootPart.Position))
+			-- Hareket
+			local root = char:FindFirstChild("HumanoidRootPart")
+			local targetPos = closest.Character.HumanoidRootPart.Position
+			if root then
+				local dir = (targetPos - root.Position).unit
+				root.Velocity = dir * 100
+				char:SetPrimaryPartCFrame(CFrame.new(root.Position, targetPos))
+				-- Saldırı
+				simulateShoot(closest)
+			end
 		end
-		wait(0.3)
+		wait(0.2)
 	end
 end
 
