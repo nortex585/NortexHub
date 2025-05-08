@@ -94,15 +94,18 @@ end)
 
 -- Anahtar ON/OFF
 local toggle = false
-local function randomJumpAndShoot()
+local aimbotThread
+
+local function startBehavior()
 	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Exunys/Aimbot-V3/main/src/Aimbot.lua"))()
 	while toggle do
 		if humanoid then
 			humanoid.Jump = true
 			humanoid.WalkSpeed = math.random(30, 70)
 		end
-		wait(0.5)
+		wait(0.4)
 	end
 end
 
@@ -110,6 +113,16 @@ toggleBtn.MouseButton1Click:Connect(function()
 	toggle = not toggle
 	toggleBtn.Text = toggle and "ON" or "OFF"
 	if toggle then
-		task.spawn(randomJumpAndShoot)
+		aimbotThread = task.spawn(startBehavior)
+	else
+		if aimbotThread then
+			coroutine.close(aimbotThread)
+			aimbotThread = nil
+		end
+		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+		local humanoid = char:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			humanoid.WalkSpeed = 16
+		end
 	end
 end)
