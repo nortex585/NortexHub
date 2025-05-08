@@ -98,7 +98,7 @@ end)
 
 -- Anahtar ON/OFF
 local toggle = false
-local behaviorThread
+local behaviorConnection
 
 local function getClosestPlayer()
 	local closestPlayer = nil
@@ -115,48 +115,46 @@ local function getClosestPlayer()
 	return closestPlayer
 end
 
-local function simulateShoot(target)
-	local args = {
-		[1] = target
-	}
-	local tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
-	if tool and tool:FindFirstChild("RemoteEvent") then
-		tool.RemoteEvent:FireServer(unpack(args))
-	end
-end
-
 local function startBehavior()
-	local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-	local humanoid = char:WaitForChild("Humanoid")
+	local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+	local root = character:WaitForChild("HumanoidRootPart")
+
 	humanoid.WalkSpeed = 50
-	while toggle do
+
+	behaviorConnection = RunService.Heartbeat:Connect(function()
+		if not toggle then return end
+
+		-- Zıplama
 		humanoid.Jump = true
-		local closest = getClosestPlayer()
-		if closest and closest.Character and closest.Character:FindFirstChild("HumanoidRootPart") then
-			-- Hareket
-			local root = char:FindFirstChild("HumanoidRootPart")
-			local targetPos = closest.Character.HumanoidRootPart.Position
-			if root then
-				local dir = (targetPos - root.Position).unit
-				root.Velocity = dir * 100
-				char:SetPrimaryPartCFrame(CFrame.new(root.Position, targetPos))
-				-- Saldırı
-				simulateShoot(closest)
+
+		-- Hedefe hareket
+		local targetPlayer = getClosestPlayer()
+		if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+			local targetPos = targetPlayer.Character.HumanoidRootPart.Position
+			local direction = (targetPos - root.Position).unit
+			root.AssemblyLinearVelocity = direction * 100
+
+			-- Nişan alma
+			character:SetPrimaryPartCFrame(CFrame.new(root.Position, targetPos))
+
+			-- Simüle ateş (örnek olarak animasyonla)
+			local tool = character:FindFirstChildOfClass("Tool")
+			if tool and tool:FindFirstChild("Activate") then
+				tool:Activate()
 			end
 		end
-		wait(0.2)
-	end
+	end)
 end
 
 toggleBtn.MouseButton1Click:Connect(function()
 	toggle = not toggle
 	toggleBtn.Text = toggle and "ON" or "OFF"
 	if toggle then
-		behaviorThread = task.spawn(startBehavior)
+		startBehavior()
 	else
-		if behaviorThread then
-			task.cancel(behaviorThread)
-			behaviorThread = nil
+		if behaviorConnection then
+			behaviorConnection:Disconnect()
 		end
 		local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 		local humanoid = char:FindFirstChildOfClass("Humanoid")
