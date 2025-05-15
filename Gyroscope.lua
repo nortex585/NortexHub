@@ -1,4 +1,5 @@
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 -- GUI Oluşturma --
 local player = game.Players.LocalPlayer
@@ -181,8 +182,9 @@ updateGyroButton()
 
 -- Kapat Butonu --
 closeButton.MouseButton1Click:Connect(function()
+    -- Tamamen kapatıyor
     mainFrame.Visible = false
-    miniFrame.Visible = true
+    miniFrame.Visible = false
 end)
 
 -- Sekme Butonu (küçültme) --
@@ -197,49 +199,10 @@ miniFrame.MouseButton1Click:Connect(function()
     miniFrame.Visible = false
 end)
 
--- Mini Frame için tıklama ve sürükleme --
-local draggingMini = false
-local dragInputMini
-local dragStartMini
-local startPosMini
-
-miniFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        draggingMini = true
-        dragStartMini = input.Position
-        startPosMini = miniFrame.Position
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                draggingMini = false
-            end
-        end)
-    end
-end)
-
-miniFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInputMini = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInputMini and draggingMini then
-        local delta = input.Position - dragStartMini
-        miniFrame.Position = UDim2.new(
-            math.clamp(startPosMini.X.Scale, 0, 1),
-            math.clamp(startPosMini.X.Offset + delta.X, 0, workspace.CurrentCamera.ViewportSize.X - miniFrame.AbsoluteSize.X),
-            math.clamp(startPosMini.Y.Scale, 0, 1),
-            math.clamp(startPosMini.Y.Offset + delta.Y, 0, workspace.CurrentCamera.ViewportSize.Y - miniFrame.AbsoluteSize.Y)
-        )
-    end
-end)
-
 -- Gyroscope Etkinleştirme Scripti --
 local function onRenderStep()
     if gyroEnabled then
         local rotation = UserInputService:GetDeviceRotation()
-        -- Örnek: Karakteri döndür (isteğe göre düzenleyebilirsin)
         local character = player.Character
         local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
         if humanoidRootPart then
@@ -248,4 +211,5 @@ local function onRenderStep()
     end
 end
 
-game:GetService("RunService").RenderStepped:Connect(onRenderStep)
+RunService.RenderStepped:Connect(onRenderStep)
+onnect(onRenderStep)
