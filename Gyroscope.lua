@@ -1,215 +1,131 @@
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+-- [[ TEK SCRIPT: Notez Hub for Zyper v.00.1 ]] --
 
--- GUI Oluşturma --
-local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "GyroscopeGUI"
-screenGui.Parent = playerGui
-
--- Ana Frame --
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.BackgroundColor3 = Color3.new(0,0,0)
-mainFrame.Size = UDim2.new(0, 300, 0, 150)
-mainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.Parent = screenGui
-
-local uiCornerMain = Instance.new("UICorner", mainFrame)
-uiCornerMain.CornerRadius = UDim.new(0, 10)
-
--- Üst Başlık Çubuğu (Sürüklenebilir) --
-local titleBar = Instance.new("Frame")
-titleBar.Name = "TitleBar"
-titleBar.BackgroundColor3 = Color3.new(0, 0, 0)
-titleBar.Size = UDim2.new(1, 0, 0, 30)
-titleBar.Parent = mainFrame
-
-local uiCornerTitle = Instance.new("UICorner", titleBar)
-uiCornerTitle.CornerRadius = UDim.new(0, 10)
-
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "TitleLabel"
-titleLabel.BackgroundTransparency = 1
-titleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.Text = "Gyroscope v1.0"
-titleLabel.TextColor3 = Color3.new(1, 1, 1)
-titleLabel.Font = Enum.Font.SourceSansBold
-titleLabel.TextSize = 18
-titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-titleLabel.Parent = titleBar
-
--- Kapat Butonu --
-local closeButton = Instance.new("TextButton")
-closeButton.Name = "CloseButton"
-closeButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-closeButton.Size = UDim2.new(0, 40, 1, 0)
-closeButton.Position = UDim2.new(0.8, 0, 0, 0)
-closeButton.Text = "X"
-closeButton.TextColor3 = Color3.new(1,1,1)
-closeButton.Font = Enum.Font.SourceSansBold
-closeButton.TextSize = 18
-closeButton.Parent = titleBar
-
-local uiCornerClose = Instance.new("UICorner", closeButton)
-uiCornerClose.CornerRadius = UDim.new(0, 5)
-
--- Sekme Butonu (Küçült/Göster) --
-local toggleButton = Instance.new("TextButton")
-toggleButton.Name = "ToggleButton"
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-toggleButton.Size = UDim2.new(0, 40, 1, 0)
-toggleButton.Position = UDim2.new(0.65, 0, 0, 0)
-toggleButton.Text = "-"
-toggleButton.TextColor3 = Color3.new(1,1,1)
-toggleButton.Font = Enum.Font.SourceSansBold
-toggleButton.TextSize = 24
-toggleButton.Parent = titleBar
-
-local uiCornerToggle = Instance.new("UICorner", toggleButton)
-uiCornerToggle.CornerRadius = UDim.new(0, 5)
-
--- Ana İçerik --
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "ContentFrame"
-contentFrame.BackgroundTransparency = 1
-contentFrame.Size = UDim2.new(1, 0, 1, -30)
-contentFrame.Position = UDim2.new(0, 0, 0, 30)
-contentFrame.Parent = mainFrame
-
--- Gyroscope Aç/Kapat Butonu --
-local gyroButton = Instance.new("TextButton")
-gyroButton.Name = "GyroButton"
-gyroButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-gyroButton.Size = UDim2.new(0, 120, 0, 40)
-gyroButton.Position = UDim2.new(0.5, -60, 0.5, -20)
-gyroButton.Text = "Gyroscope Aç"
-gyroButton.TextColor3 = Color3.new(1,1,1)
-gyroButton.Font = Enum.Font.SourceSansBold
-gyroButton.TextSize = 20
-gyroButton.Parent = contentFrame
-
-local uiCornerGyro = Instance.new("UICorner", gyroButton)
-uiCornerGyro.CornerRadius = UDim.new(0, 8)
-
--- Sekme Boyutuna Küçültülmüş Kare --
-local miniFrame = Instance.new("Frame")
-miniFrame.Name = "MiniFrame"
-miniFrame.BackgroundColor3 = Color3.new(0,0,0)
-miniFrame.Size = UDim2.new(0, 80, 0, 30)
-miniFrame.Position = UDim2.new(0.5, -40, 0.5, -15)
-miniFrame.AnchorPoint = Vector2.new(0.5,0.5)
-miniFrame.Visible = false
-miniFrame.Parent = screenGui
-
-local uiCornerMini = Instance.new("UICorner", miniFrame)
-uiCornerMini.CornerRadius = UDim.new(0, 10)
-
-local miniLabel = Instance.new("TextLabel")
-miniLabel.Name = "MiniLabel"
-miniLabel.BackgroundTransparency = 1
-miniLabel.Size = UDim2.new(1, 0, 1, 0)
-miniLabel.Text = "GR"
-miniLabel.TextColor3 = Color3.new(1,1,1)
-miniLabel.Font = Enum.Font.SourceSansBold
-miniLabel.TextSize = 20
-miniLabel.Parent = miniFrame
-
--- Sürükleme Fonksiyonu --
-local function makeDraggable(frame, dragArea)
-    local dragging = false
-    local dragInput
-    local dragStart
-    local startPos
-
-    dragArea.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-
-    dragArea.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(
-                math.clamp(startPos.X.Scale, 0, 1),
-                math.clamp(startPos.X.Offset + delta.X, 0, workspace.CurrentCamera.ViewportSize.X - frame.AbsoluteSize.X),
-                math.clamp(startPos.Y.Scale, 0, 1),
-                math.clamp(startPos.Y.Offset + delta.Y, 0, workspace.CurrentCamera.ViewportSize.Y - frame.AbsoluteSize.Y)
-            )
-        end
-    end)
+-- RemoteEvent oluştur (varsa kullan)
+local event = ReplicatedStorage:FindFirstChild("GiveEuro")
+if not event then
+    event = Instance.new("RemoteEvent")
+    event.Name = "GiveEuro"
+    event.Parent = ReplicatedStorage
 end
 
-makeDraggable(mainFrame, titleBar)
-makeDraggable(miniFrame, miniFrame)
+-- Oyuncu oyuna girince leaderstats + GUI kur
+Players.PlayerAdded:Connect(function(player)
+    -- Leaderstats
+    local stats = Instance.new("Folder")
+    stats.Name = "leaderstats"
+    stats.Parent = player
 
--- Gyroscope Kontrol --
-local gyroEnabled = false
+    local euro = Instance.new("IntValue")
+    euro.Name = "Euro"
+    euro.Value = 0
+    euro.Parent = stats
 
-local function updateGyroButton()
-    if gyroEnabled then
-        gyroButton.Text = "Gyroscope Kapat"
-    else
-        gyroButton.Text = "Gyroscope Aç"
-    end
-end
+    -- GUI
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "NotezHub"
+    gui.ResetOnSpawn = false
 
-gyroButton.MouseButton1Click:Connect(function()
-    gyroEnabled = not gyroEnabled
-    updateGyroButton()
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 200)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+    frame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+    frame.Active = true
+    frame.Draggable = true
+    frame.Parent = gui
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0,12)
+    corner.Parent = frame
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -40, 0, 30)
+    title.Position = UDim2.new(0,10,0,0)
+    title.BackgroundTransparency = 1
+    title.Text = "Notez Hub for Zyper"
+    title.TextColor3 = Color3.fromRGB(255,255,255)
+    title.TextScaled = true
+    title.Font = Enum.Font.SourceSansBold
+    title.Parent = frame
+
+    local version = Instance.new("TextLabel")
+    version.Size = UDim2.new(0,80,0,20)
+    version.Position = UDim2.new(0,5,1,-25)
+    version.BackgroundTransparency = 1
+    version.Text = "v.00.1"
+    version.TextColor3 = Color3.fromRGB(200,200,200)
+    version.TextScaled = true
+    version.Font = Enum.Font.SourceSans
+    version.Parent = frame
+
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0,30,0,30)
+    closeBtn.Position = UDim2.new(1,-35,0,5)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+    closeBtn.Text = "X"
+    closeBtn.TextColor3 = Color3.fromRGB(255,0,0)
+    closeBtn.Font = Enum.Font.SourceSansBold
+    closeBtn.TextScaled = true
+    closeBtn.Parent = frame
+
+    local corner2 = Instance.new("UICorner")
+    corner2.CornerRadius = UDim.new(0,8)
+    corner2.Parent = closeBtn
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0.8,0,0,40)
+    box.Position = UDim2.new(0.1,0,0.4,0)
+    box.BackgroundColor3 = Color3.fromRGB(40,40,40)
+    box.PlaceholderText = "Miktar gir..."
+    box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.Font = Enum.Font.SourceSans
+    box.TextScaled = true
+    box.Parent = frame
+
+    local corner3 = Instance.new("UICorner")
+    corner3.CornerRadius = UDim.new(0,8)
+    corner3.Parent = box
+
+    local addBtn = Instance.new("TextButton")
+    addBtn.Size = UDim2.new(0.6,0,0,40)
+    addBtn.Position = UDim2.new(0.2,0,0.7,0)
+    addBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+    addBtn.Text = "Ekle"
+    addBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    addBtn.Font = Enum.Font.SourceSansBold
+    addBtn.TextScaled = true
+    addBtn.Parent = frame
+
+    local corner4 = Instance.new("UICorner")
+    corner4.CornerRadius = UDim.new(0,8)
+    corner4.Parent = addBtn
+
+    -- Local kısım (GUI eventleri için)
+    gui.Parent = player:WaitForChild("PlayerGui")
+
+    closeBtn.MouseButton1Click:Connect(function()
+        frame.Visible = false
+    end)
+
+    addBtn.MouseButton1Click:Connect(function()
+        local amount = tonumber(box.Text)
+        if amount and amount > 0 then
+            event:FireServer(amount)
+        end
+    end)
 end)
 
-updateGyroButton()
-
--- Kapat Butonu --
-closeButton.MouseButton1Click:Connect(function()
-    -- Tamamen kapatıyor
-    mainFrame.Visible = false
-    miniFrame.Visible = false
-end)
-
--- Sekme Butonu (küçültme) --
-toggleButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    miniFrame.Visible = true
-end)
-
--- Mini Frame tıklayınca ana GUI gösterilsin --
-miniFrame.MouseButton1Click:Connect(function()
-    mainFrame.Visible = true
-    miniFrame.Visible = false
-end)
-
--- Gyroscope Etkinleştirme Scripti --
-local function onRenderStep()
-    if gyroEnabled then
-        local rotation = UserInputService:GetDeviceRotation()
-        local character = player.Character
-        local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
-        if humanoidRootPart then
-            humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position) * rotation
+-- Server tarafında Euro ekleme
+event.OnServerEvent:Connect(function(player, amount)
+    if type(amount) == "number" and amount > 0 then
+        local stats = player:FindFirstChild("leaderstats")
+        if stats then
+            local euro = stats:FindFirstChild("Euro")
+            if euro then
+                euro.Value = euro.Value + amount
+            end
         end
     end
-end
-
-RunService.RenderStepped:Connect(onRenderStep)
-onnect(onRenderStep)
+end)
