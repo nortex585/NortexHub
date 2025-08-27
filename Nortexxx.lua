@@ -233,7 +233,7 @@ local function createFunctionButton(parent, text, order, isFarm)
 					if not hrp then return end
 					while farming and hrp do
 						for _, moneyPart in pairs(workspace:GetChildren()) do
-							if moneyPart.Name == "Money" and moneyPart:IsA("BasePart") then
+							if moneyPart.Name == "Euro" and moneyPart:IsA("BasePart") then
 								local mesh = moneyPart:FindFirstChildWhichIsA("MeshPart") or moneyPart
 								local targetPos = mesh.Position + Vector3.new(0,2,0)
 								hrp.CFrame = CFrame.new(targetPos)
@@ -579,7 +579,7 @@ for _, btnFrame in pairs(mainPage:GetChildren()) do
 
 						while farming and humanoidRootPart do
 							for _, moneyPart in pairs(workspace:GetChildren()) do
-								if moneyPart.Name == "Money" and moneyPart:IsA("BasePart") then
+								if moneyPart.Name == "Euro" and moneyPart:IsA("BasePart") then
 									local mesh = moneyPart:FindFirstChildWhichIsA("MeshPart") or moneyPart
 									local targetPos = mesh.Position + Vector3.new(0, 2, 0) -- üstüne ışınlan
 									-- İleri-geri hareket
@@ -634,7 +634,7 @@ for _, btnFrame in pairs(mainPage:GetChildren()) do
 
 						while farming and hrp do
 							for _, moneyPart in pairs(workspace:GetChildren()) do
-								if moneyPart.Name == "Euro","Para","Money","spara" and moneyPart:IsA("BasePart") then
+								if moneyPart.Name == "Euro" and moneyPart:IsA("BasePart") then
 									local mesh = moneyPart:FindFirstChildWhichIsA("MeshPart") or moneyPart
 									local targetPos = mesh.Position + Vector3.new(0, 2, 0)
 
@@ -799,5 +799,6 @@ bringBtn.MouseButton1Click:Connect(function()
 		end
 	end
 end)
+
 
 
