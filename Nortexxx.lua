@@ -30,7 +30,7 @@ end
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 
--- Teleport loop fonksiyonu
+-- Teleport loop fonksiyonu (yukarı → aşağı iniş)
 local function teleportLoop()
 	spawn(function()
 		local targetParts = getTargetParts()
@@ -38,13 +38,25 @@ local function teleportLoop()
 		while active do
 			local targetPart = targetParts[currentIndex]
 			if targetPart and targetPart:IsA("BasePart") then
-				hrp.CFrame = targetPart.CFrame + Vector3.new(0,3,0)
+				-- Önce hedefin yukarısına ışınla
+				local upPos = targetPart.CFrame + Vector3.new(0, 10, 0)
+				hrp.CFrame = upPos
+				
+				-- Sonra Tween ile aşağı indir (parayı alır)
+				local tween = TweenService:Create(
+					hrp,
+					TweenInfo.new(1, Enum.EasingStyle.Linear), -- 1 sn’de in
+					{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
+				)
+				tween:Play()
+				tween.Completed:Wait()
 			end
+
 			currentIndex = currentIndex + 1
 			if currentIndex > #targetParts then
 				currentIndex = 1
 			end
-			wait(1)
+			wait(3) -- 3 saniye bekleme
 		end
 	end)
 end
@@ -116,7 +128,7 @@ contentCorner.CornerRadius = UDim.new(0,12)
 
 -- Euro Farm Label
 local euroLabel = Instance.new("TextLabel")
-euroLabel.Size = UDim2.new(1, -80, 1, 0) -- Toggle buton için sağdan boşluk bırak
+euroLabel.Size = UDim2.new(1, -80, 1, 0)
 euroLabel.Position = UDim2.new(0, 10, 0, 0)
 euroLabel.Text = "Euro Farm"
 euroLabel.Font = Enum.Font.FredokaOne
