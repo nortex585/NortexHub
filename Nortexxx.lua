@@ -3,10 +3,8 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local Leaderstats = player:WaitForChild("leaderstats")
-local EuroStat = Leaderstats:WaitForChild("EURO") -- Leaderstats içindeki EURO
 
--- Teleport sistemi
+-- Teleport sistemi değişkenleri
 local active = false
 local targetNames = {
 	"053d059b00b8471abe331339c0ef91",
@@ -74,135 +72,84 @@ gui.ResetOnSpawn = false
 
 -- Ana Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 500, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15,15,15)
+mainFrame.Size = UDim2.new(0,300,0,200)
+mainFrame.Position = UDim2.new(0.5,-150,0.5,-100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 mainFrame.Parent = gui
 
-local mainUICorner = Instance.new("UICorner", mainFrame)
-mainUICorner.CornerRadius = UDim.new(0,12)
+local mainCorner = Instance.new("UICorner", mainFrame)
+mainCorner.CornerRadius = UDim.new(0,12)
+
+local mainStroke = Instance.new("UIStroke", mainFrame)
+mainStroke.Color = Color3.fromRGB(150,150,150)
+mainStroke.Thickness = 2
 
 -- TopBar
 local topBar = Instance.new("Frame")
-topBar.Size = UDim2.new(1,0,0,40)
+topBar.Size = UDim2.new(1,0,0,30)
 topBar.Position = UDim2.new(0,0,0,0)
-topBar.BackgroundColor3 = Color3.fromRGB(25,25,25)
+topBar.BackgroundColor3 = Color3.fromRGB(35,35,35)
 topBar.Parent = mainFrame
-
-local topUICorner = Instance.new("UICorner", topBar)
-topUICorner.CornerRadius = UDim.new(0,12)
+local topCorner = Instance.new("UICorner", topBar)
+topCorner.CornerRadius = UDim.new(0,12)
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(0,120,1,0)
+titleLabel.Size = UDim2.new(0,150,1,0)
 titleLabel.Position = UDim2.new(0,10,0,0)
-titleLabel.Text = "Nortex Hub"
-titleLabel.Font = Enum.Font.FredokaOne
+titleLabel.Text = "Nortex Hub v.001"
 titleLabel.TextColor3 = Color3.fromRGB(255,255,255)
 titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.FredokaOne
 titleLabel.TextScaled = true
 titleLabel.Parent = topBar
 
--- EURO Leaderstats
-local euroLabel = Instance.new("TextLabel")
-euroLabel.Size = UDim2.new(0,120,1,0)
-euroLabel.Position = UDim2.new(0.5,-60,0,0)
-euroLabel.BackgroundTransparency = 1
-euroLabel.Font = Enum.Font.FredokaOne
-euroLabel.TextColor3 = Color3.fromRGB(255,255,255)
-euroLabel.TextScaled = true
-euroLabel.Text = "EURO: "..EuroStat.Value
-euroLabel.Parent = topBar
-
--- Leaderstats güncellemesi
-EuroStat.Changed:Connect(function(val)
-	euroLabel.Text = "EURO: "..val
-end)
-
--- Kapat ve Minimize butonları
+-- Kapat ve Minimize
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0,30,0,30)
-closeBtn.Position = UDim2.new(1,-35,0,5)
+closeBtn.Size = UDim2.new(0,25,0,25)
+closeBtn.Position = UDim2.new(1,-30,0,2)
 closeBtn.Text = "X"
-closeBtn.Font = Enum.Font.FredokaOne
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 closeBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
+closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
 closeBtn.Parent = topBar
 local closeCorner = Instance.new("UICorner", closeBtn)
 closeCorner.CornerRadius = UDim.new(0,6)
 
-local minBtn = Instance.new("TextButton")
-minBtn.Size = UDim2.new(0,30,0,30)
-minBtn.Position = UDim2.new(1,-70,0,5)
-minBtn.Text = "_"
-minBtn.Font = Enum.Font.FredokaOne
-minBtn.TextColor3 = Color3.fromRGB(255,255,255)
-minBtn.BackgroundColor3 = Color3.fromRGB(50,50,50)
-minBtn.Parent = topBar
-local minCorner = Instance.new("UICorner", minBtn)
-minCorner.CornerRadius = UDim.new(0,6)
 
--- Ana içerik frame
+
+-- Ana İçerik Frame (Ortada)
 local contentFrame = Instance.new("Frame")
-contentFrame.Size = UDim2.new(1, -20,1,-60)
+contentFrame.Size = UDim2.new(1,-20,0,100)
 contentFrame.Position = UDim2.new(0,10,0,50)
-contentFrame.BackgroundColor3 = Color3.fromRGB(35,35,35)
+contentFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
 contentFrame.Parent = mainFrame
 local contentCorner = Instance.new("UICorner", contentFrame)
 contentCorner.CornerRadius = UDim.new(0,12)
 
--- Profil üst frame
-local profileFrame = Instance.new("Frame")
-profileFrame.Size = UDim2.new(1, -20,0,150)
-profileFrame.Position = UDim2.new(0,10,0,10)
-profileFrame.BackgroundColor3 = Color3.fromRGB(50,50,50)
-profileFrame.Parent = contentFrame
-local profCorner = Instance.new("UICorner", profileFrame)
-profCorner.CornerRadius = UDim.new(0,12)
+-- Euro Farm Label
+-- Minimize butonu kaldırıldı, önceki minBtn kısmını silebilirsin
 
--- Profil Image
-local profileImage = Instance.new("ImageLabel")
-profileImage.Size = UDim2.new(0,100,0,100)
-profileImage.Position = UDim2.new(0.5,-50,0,20)
-profileImage.Image = player.UserId and "rbxthumb://type=AvatarHeadShot&id="..player.UserId.."&w=420&h=420"
-profileImage.BackgroundTransparency = 1
-profileImage.Parent = profileFrame
+-- Euro Farm Label
+-- Euro Farm Label
+local euroLabel = Instance.new("TextLabel")
+euroLabel.Size = UDim2.new(1, -80, 1, 0) -- Toggle buton için sağdan boşluk bırakıyoruz
+euroLabel.Position = UDim2.new(0, 10, 0, 0)
+euroLabel.Text = "Euro Farm"
+euroLabel.Font = Enum.Font.FredokaOne
+euroLabel.TextColor3 = Color3.fromRGB(255,255,255)
+euroLabel.BackgroundTransparency = 1
+euroLabel.TextScaled = true -- Tam alana sığdır
+euroLabel.TextXAlignment = Enum.TextXAlignment.Left -- Solda hizala
+euroLabel.Parent = contentFrame
 
--- Alt Label (Oyuncu ismi)
-local nameLabel = Instance.new("TextLabel")
-nameLabel.Size = UDim2.new(1,0,0,30)
-nameLabel.Position = UDim2.new(0,0,0,125)
-nameLabel.Text = player.Name
-nameLabel.Font = Enum.Font.FredokaOne
-nameLabel.TextColor3 = Color3.fromRGB(255,255,255)
-nameLabel.BackgroundTransparency = 1
-nameLabel.Parent = profileFrame
 
--- Euro Farm Frame
-local euroFrame = Instance.new("Frame")
-euroFrame.Size = UDim2.new(1,-20,0,60)
-euroFrame.Position = UDim2.new(0,10,0,170)
-euroFrame.BackgroundColor3 = Color3.fromRGB(60,60,60)
-euroFrame.Parent = contentFrame
-local euroCorner = Instance.new("UICorner", euroFrame)
-euroCorner.CornerRadius = UDim.new(0,12)
 
--- Sol Label
-local euroText = Instance.new("TextLabel")
-euroText.Size = UDim2.new(0,150,1,0)
-euroText.Position = UDim2.new(0,0,0,0)
-euroText.Text = "Euro Farm"
-euroText.Font = Enum.Font.FredokaOne
-euroText.TextColor3 = Color3.fromRGB(255,255,255)
-euroText.BackgroundTransparency = 1
-euroText.Parent = euroFrame
-
--- Sağ Toggle Buton
+-- Toggle Buton
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0,50,0,50)
-toggleBtn.Position = UDim2.new(1,-60,0,5)
-toggleBtn.Text = ""
+toggleBtn.Position = UDim2.new(1,-60,0,25)
 toggleBtn.BackgroundColor3 = Color3.fromRGB(100,100,100)
-toggleBtn.Parent = euroFrame
+toggleBtn.Text = ""
+toggleBtn.Parent = contentFrame
 local toggleCorner = Instance.new("UICorner", toggleBtn)
 toggleCorner.CornerRadius = UDim.new(0,12)
 
@@ -219,15 +166,43 @@ toggleBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Kapat ve Minimize Animasyonları
+-- Kapat ve Minimize Fonksiyonları
 closeBtn.MouseButton1Click:Connect(function()
-	local tween = TweenService:Create(mainFrame, TweenInfo.new(0.5), {Size=UDim2.new(0,0,0,0)})
+	local tween = TweenService:Create(mainFrame,TweenInfo.new(0.5),{Size=UDim2.new(0,0,0,0)})
 	tween:Play()
 	tween.Completed:Wait()
 	gui:Destroy()
 end)
 
-minBtn.MouseButton1Click:Connect(function()
-	local tween = TweenService:Create(contentFrame, TweenInfo.new(0.5), {Size=UDim2.new(1,-20,0,0)})
-	tween:Play()
+
+
+-- Topbar Sürükleme
+local dragging = false
+local dragInput, dragStart, startPos
+
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+topBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+RunService.RenderStepped:Connect(function()
+	if dragging and dragInput then
+		local delta = dragInput.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
 end)
