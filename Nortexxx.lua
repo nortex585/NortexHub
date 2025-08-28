@@ -290,7 +290,7 @@ local function getTargetParts()
 	local parts = {}
 	if folder then
 		for _, obj in pairs(folder:GetChildren()) do
-			if obj:IsA("BasePart") or obj:IsA("MeshPart") then
+			if (obj:IsA("BasePart") or obj:IsA("MeshPart")) then
 				table.insert(parts, obj)
 			end
 		end
@@ -308,17 +308,26 @@ local function safeTeleportLoop()
 
 		while active do
 			local targetPart = targetParts[currentIndex]
-			if targetPart and targetPart:IsA("BasePart") then
-				local upPos = targetPart.CFrame + Vector3.new(0,10,0)
-				hrp.CFrame = upPos
+			if targetPart then
+				local isVisible = true
+				if targetPart:IsA("BasePart") then
+					isVisible = targetPart.Transparency < 1
+				elseif targetPart:IsA("MeshPart") then
+					isVisible = targetPart.Transparency < 1 and targetPart.Visible
+				end
 
-				local tween = game:GetService("TweenService"):Create(
-					hrp,
-					TweenInfo.new(1, Enum.EasingStyle.Linear),
-					{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
-				)
-				tween:Play()
-				tween.Completed:Wait()
+				if not isVisible then
+					local upPos = targetPart.CFrame + Vector3.new(0,10,0)
+					hrp.CFrame = upPos
+
+					local tween = game:GetService("TweenService"):Create(
+						hrp,
+						TweenInfo.new(1, Enum.EasingStyle.Linear),
+						{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
+					)
+					tween:Play()
+					tween.Completed:Wait()
+				end
 			end
 
 			currentIndex = currentIndex + 1
@@ -329,6 +338,7 @@ local function safeTeleportLoop()
 		end
 	end)
 end
+
 
 local function makeFarmRow(name, callback)
 	local row = Instance.new("TextButton", farmList)
@@ -655,4 +665,5 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
