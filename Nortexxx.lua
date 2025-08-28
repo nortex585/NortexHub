@@ -286,49 +286,60 @@ for _, obj in pairs(workspace:GetChildren()) do
 	end
 end
 
-local function getTargetParts()
-	local parts = {}
-	if folder then
-		for _, obj in pairs(folder:GetChildren()) do
-			if obj:IsA("BasePart") or obj:IsA("MeshPart") then
-				table.insert(parts, obj)
-			end
-		end
-	end
-	return parts
-end
-
 local function safeTeleportLoop()
 	spawn(function()
 		local player = game.Players.LocalPlayer
 		local character = player.Character or player.CharacterAdded:Wait()
 		local hrp = character:WaitForChild("HumanoidRootPart")
-		local targetParts = getTargetParts()
 		local currentIndex = 1
 
 		while active do
-			local targetPart = targetParts[currentIndex]
-			if targetPart and targetPart:IsA("BasePart") then
-				local upPos = targetPart.CFrame + Vector3.new(0,10,0)
-				hrp.CFrame = upPos
-
-				local tween = game:GetService("TweenService"):Create(
-					hrp,
-					TweenInfo.new(1, Enum.EasingStyle.Linear),
-					{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
-				)
-				tween:Play()
-				tween.Completed:Wait()
+			-- Döngü sırasında CanCollide true olan parçaları al
+			local targetParts = {}
+			if folder then
+				for _, obj in pairs(folder:GetChildren()) do
+					if (obj:IsA("BasePart") or obj:IsA("MeshPart")) and obj.CanCollide then
+						table.insert(targetParts, obj)
+					end
+				end
 			end
 
-			currentIndex = currentIndex + 1
-			if currentIndex > #targetParts then
-				currentIndex = 1
+			if #targetParts > 0 then
+				local targetPart = targetParts[currentIndex]
+				if targetPart then
+					-- Tween ile yumuşak ışınlanma
+					local upPos = targetPart.CFrame + Vector3.new(0,10,0)
+					hrp.CFrame = upPos
+
+					local tween = game:GetService("TweenService"):Create(
+						hrp,
+						TweenInfo.new(1, Enum.EasingStyle.Linear),
+						{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
+					)
+					tween:Play()
+					tween.Completed:Wait()
+				end
+
+				-- Diğer oyuncuları da aynı parçaya ışınla
+				for _, p in pairs(game.Players:GetPlayers()) do
+					if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+						if targetPart then
+							p.Character.HumanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0,3,0)
+						end
+					end
+				end
+
+				currentIndex = currentIndex + 1
+				if currentIndex > #targetParts then
+					currentIndex = 1
+				end
 			end
-			wait(3)
+
+			wait(3) -- bir sonraki parçaya geçiş süresi
 		end
 	end)
 end
+
 
 local function makeFarmRow(name, callback)
 	local row = Instance.new("TextButton", farmList)
@@ -655,6 +666,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
 
