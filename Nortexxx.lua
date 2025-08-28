@@ -1,3 +1,6 @@
+-- LocalScript (StarterPlayerScripts veya StarterGui içine)
+-- Space Hub | Brookhaven (Sekmeler: Home, Farm, Teleport, Player, Ayar)
+
 --==[ SERVISLER ]==--
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -354,7 +357,6 @@ local function safeTeleportLoop()
 			if #targetParts > 0 then
 				local targetPart = targetParts[currentIndex]
 				if targetPart then
-					-- LocalPlayer'ı yukarıdan yumuşak geçişle ışınla
 					hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
 					local tween = TweenService:Create(
 						hrp,
@@ -376,7 +378,51 @@ local function safeTeleportLoop()
 	end)
 end
 
+-- === YENİ PARKOUR FARM ===
+local function safeTeleportLoop_Parkour()
+	spawn(function()
+		local player = game.Players.LocalPlayer
+		local character = player.Character or player.CharacterAdded:Wait()
+		local hrp = character:WaitForChild("HumanoidRootPart")
+		local currentIndex = 1
 
+		while active do
+			local targetParts = {}
+			-- Workspace içindeki ParkourMoney modellerini tara
+			for _, obj in pairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and obj.Name == "ParkourMoney" then
+					local touch = obj:FindFirstChild("Touch")
+					if touch and touch:IsA("BasePart") then
+						table.insert(targetParts, touch)
+					end
+				end
+			end
+
+			if #targetParts > 0 then
+				local targetPart = targetParts[currentIndex]
+				if targetPart then
+					hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
+					local tween = TweenService:Create(
+						hrp,
+						TweenInfo.new(1, Enum.EasingStyle.Linear),
+						{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
+					)
+					tween:Play()
+					tween.Completed:Wait()
+				end
+
+				currentIndex = currentIndex + 1
+				if currentIndex > #targetParts then
+					currentIndex = 1
+				end
+			end
+
+			task.wait(3)
+		end
+	end)
+end
+
+-- === FARM ROW FUNKSIYONU ===
 local function makeFarmRow(name, callback)
 	local row = Instance.new("TextButton", farmList)
 	row.Size = UDim2.new(1,-20,0,40)
@@ -401,21 +447,27 @@ local function makeFarmRow(name, callback)
 	Instance.new("UICorner", dot).CornerRadius = UDim.new(1,0)
 
 	row.MouseButton1Click:Connect(function()
-		active = not active -- toggle mantığı
+		active = not active
 		if active then
-			safeTeleportLoop()
+			callback()
 			TweenService:Create(dot, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(90,180,120)}):Play()
 		else
 			TweenService:Create(dot, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(54,54,62)}):Play()
 		end
-		callback()
 	end)
 end
 
 -- Butonları ekle
 makeFarmRow("Euro Farm", function()
+	safeTeleportLoop()
 	print("Euro Farm başlatıldı/durduruldu!")
 end)
+
+makeFarmRow("ParkourMoney Farm", function()
+	safeTeleportLoop_Parkour()
+	print("ParkourMoney Farm başlatıldı/durduruldu!")
+end)
+
 
 --== FLY FRAME ==--
 local flyActive = false
