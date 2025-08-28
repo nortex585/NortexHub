@@ -294,25 +294,7 @@ local function safeTeleportLoop()
 		local currentIndex = 1
 
 		while active do
-			-- Döngü sırasında CanCollide true olan parçaları al
-local function safeTeleportLoop()
-	spawn(function()
-		local player = game.Players.LocalPlayer
-		local character = player.Character or player.CharacterAdded:Wait()
-		local hrp = character:WaitForChild("HumanoidRootPart")
-		local currentIndex = 1
-
-		while active do
-			-- Döngü sırasında CanCollide true olan parçaları al
-		local function safeTeleportLoop()
-	spawn(function()
-		local player = game.Players.LocalPlayer
-		local character = player.Character or player.CharacterAdded:Wait()
-		local hrp = character:WaitForChild("HumanoidRootPart")
-		local currentIndex = 1
-
-		while active do
-			-- CanCollide true olan parçaları al
+			-- Sadece CanCollide = true olan parçaları al
 			local targetParts = {}
 			if folder then
 				for _, obj in pairs(folder:GetChildren()) do
@@ -325,7 +307,7 @@ local function safeTeleportLoop()
 			if #targetParts > 0 then
 				local targetPart = targetParts[currentIndex]
 				if targetPart then
-					-- Yukarıdan yumuşak geçiş
+					-- LocalPlayer'ı yukarıdan yumuşak geçişle ışınla
 					hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
 					local tween = TweenService:Create(
 						hrp,
@@ -342,10 +324,11 @@ local function safeTeleportLoop()
 				end
 			end
 
-			task.wait(3) -- parçalar arası bekleme
+			task.wait(3)
 		end
 	end)
 end
+
 
 
 
@@ -674,6 +657,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
 
