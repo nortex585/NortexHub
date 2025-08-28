@@ -1,6 +1,3 @@
--- LocalScript (StarterPlayerScripts veya StarterGui içine)
--- Space Hub | Brookhaven (Sekmeler: Home, Farm, Teleport, Player, Ayar)
-
 --==[ SERVISLER ]==--
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -146,10 +143,30 @@ local function makeTopButton(txt)
 	return b
 end
 
+local isMinimized = false -- başlangıçta minimizet değil
+
 local minimizeBtn = makeTopButton("–")
-minimizeBtn.Position = UDim2.fromOffset(4,5)
+minimizeBtn.Position = UDim2.fromOffset(4, 5)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	if isMinimized then
+		minimizeBtn.Text = "–"  -- geri açınca –
+		isMinimized = false
+		-- burada frame'i açma kodunu ekleyebilirsin
+	else
+		minimizeBtn.Text = "+"  -- minimize ettiğinde +
+		isMinimized = true
+		-- burada frame'i küçültme/gizleme kodunu ekleyebilirsin
+	end
+end)
+
 local closeBtn = makeTopButton("×")
-closeBtn.Position = UDim2.fromOffset(44,5)
+closeBtn.Position = UDim2.fromOffset(44, 5)
+closeBtn.MouseButton1Click:Connect(function()
+	-- kapatma işlemi
+	minimizeBtn.Parent:Destroy()
+end)
+
 
 -- Gövde
 local body = Instance.new("Frame")
