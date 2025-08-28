@@ -306,7 +306,7 @@ local function safeTeleportLoop()
 		local currentIndex = 1
 
 		while active do
-			-- Döngü sırasında CanCollide true olan parçaları al
+			-- Sadece CanCollide = true olan parçaları al
 			local targetParts = {}
 			if folder then
 				for _, obj in pairs(folder:GetChildren()) do
@@ -319,11 +319,9 @@ local function safeTeleportLoop()
 			if #targetParts > 0 then
 				local targetPart = targetParts[currentIndex]
 				if targetPart then
-					-- Tween ile yumuşak ışınlanma
-					local upPos = targetPart.CFrame + Vector3.new(0,10,0)
-					hrp.CFrame = upPos
-
-					local tween = game:GetService("TweenService"):Create(
+					-- LocalPlayer'ı yukarıdan yumuşak geçişle ışınla
+					hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
+					local tween = TweenService:Create(
 						hrp,
 						TweenInfo.new(1, Enum.EasingStyle.Linear),
 						{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
@@ -332,22 +330,13 @@ local function safeTeleportLoop()
 					tween.Completed:Wait()
 				end
 
-				-- Diğer oyuncuları da aynı parçaya ışınla
-				for _, p in pairs(game.Players:GetPlayers()) do
-					if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-						if targetPart then
-							p.Character.HumanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0,3,0)
-						end
-					end
-				end
-
 				currentIndex = currentIndex + 1
 				if currentIndex > #targetParts then
 					currentIndex = 1
 				end
 			end
 
-			wait(3) -- bir sonraki parçaya geçiş süresi
+			task.wait(3)
 		end
 	end)
 end
@@ -678,4 +667,5 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
