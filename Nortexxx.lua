@@ -290,23 +290,12 @@ local function getTargetParts()
 	local parts = {}
 	if folder then
 		for _, obj in pairs(folder:GetChildren()) do
-			if obj:IsA("BasePart") or obj:IsA("MeshPart") then
+			if (obj:IsA("BasePart") or obj:IsA("MeshPart")) and obj.CanCollide then
 				table.insert(parts, obj)
 			end
 		end
 	end
 	return parts
-end
-
-local function isPartActive(part)
-	-- Part'ın içinde BillboardGui var mı ve Enabled mı?
-	for _, gui in pairs(part:GetChildren()) do
-		if gui:IsA("BillboardGui") then
-			return gui.Enabled
-		end
-	end
-	-- Eğer BillboardGui yoksa default olarak ışınlamayı kapat
-	return false
 end
 
 local function safeTeleportLoop()
@@ -319,7 +308,7 @@ local function safeTeleportLoop()
 
 		while active do
 			local targetPart = targetParts[currentIndex]
-			if targetPart and isPartActive(targetPart) then
+			if targetPart then
 				-- Tween ile yumuşak ışınlanma
 				local upPos = targetPart.CFrame + Vector3.new(0,10,0)
 				hrp.CFrame = upPos
@@ -341,6 +330,7 @@ local function safeTeleportLoop()
 		end
 	end)
 end
+
 
 
 local function makeFarmRow(name, callback)
@@ -668,6 +658,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
 
