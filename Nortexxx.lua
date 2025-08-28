@@ -295,6 +295,15 @@ local function safeTeleportLoop()
 
 		while active do
 			-- Döngü sırasında CanCollide true olan parçaları al
+local function safeTeleportLoop()
+	spawn(function()
+		local player = game.Players.LocalPlayer
+		local character = player.Character or player.CharacterAdded:Wait()
+		local hrp = character:WaitForChild("HumanoidRootPart")
+		local currentIndex = 1
+
+		while active do
+			-- Döngü sırasında CanCollide true olan parçaları al
 			local targetParts = {}
 			if folder then
 				for _, obj in pairs(folder:GetChildren()) do
@@ -320,15 +329,6 @@ local function safeTeleportLoop()
 					tween.Completed:Wait()
 				end
 
-				-- Diğer oyuncuları da aynı parçaya ışınla
-				for _, p in pairs(game.Players:GetPlayers()) do
-					if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-						if targetPart then
-							p.Character.HumanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0,3,0)
-						end
-					end
-				end
-
 				currentIndex = currentIndex + 1
 				if currentIndex > #targetParts then
 					currentIndex = 1
@@ -339,6 +339,7 @@ local function safeTeleportLoop()
 		end
 	end)
 end
+
 
 
 local function makeFarmRow(name, callback)
@@ -666,6 +667,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
 
