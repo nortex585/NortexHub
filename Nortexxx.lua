@@ -18,7 +18,24 @@ local function findCFrame(target:any): CFrame?
 	if typeof(target) == "CFrame" then return target end
 	if typeof(target) == "Vector3" then return CFrame.new(target) end
 	if typeof(target) == "string" then
-		if target == "TopSpawner" then
+		if target == "Spawn" then
+			-- Spawn ile başlayan model bul
+			local model
+			for _, obj in pairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and string.find(obj.Name, "^Spawn") then
+					model = obj
+					break
+				end
+			end
+			if model then
+				-- Modelin içindeki Spawn ile başlayan part bul
+				for _, part in pairs(model:GetDescendants()) do
+					if part:IsA("BasePart") and string.find(part.Name, "^Spawn") then
+						return part.CFrame + Vector3.new(0,5,0)
+					end
+				end
+			end
+		elseif target == "TopSpawner" then
 			local inst = workspace:FindFirstChild("FutbolGerekli") and workspace.FutbolGerekli:FindFirstChild("TopSpawner")
 			if inst then return inst.CFrame + Vector3.new(0,5,0) end
 		else
@@ -37,6 +54,7 @@ local function findCFrame(target:any): CFrame?
 	end
 	return nil
 end
+
 
 
 local function getHRP(char: Model?): BasePart?
@@ -232,7 +250,7 @@ homeTitle.BackgroundTransparency = 1
 
 -- Alt küçük frameler
 local smallFrames = {}
-local texts = {"Euro Farm Eklendi", "Parkur Money Farm Eklendi", "Teleport Eklendi", "Hız Ayarlama Eklendi"}
+local texts = {"Euro Farm Eklendi", "Fly", "Teleport Eklendi", "Hız Ayarlama Eklendi"}
 for i, txt in ipairs(texts) do
 	local frame = Instance.new("Frame", homePage)
 	frame.Size = UDim2.new(0, 160, 0, 40)
@@ -382,6 +400,164 @@ makeFarmRow("Euro Farm", function()
 	print("Euro Farm başlatıldı/durduruldu!")
 end)
 
+--== FLY FRAME ==--
+local flyActive = false
+local flySpeed = 50 -- varsayılan hız
+local flyConn
+
+-- Frame
+local flyFrame = Instance.new("Frame", farmList)
+flyFrame.Size = UDim2.new(1,-20,0,40)
+flyFrame.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", flyFrame).CornerRadius = UDim.new(0,8)
+
+-- "Fly" yazısı
+local flyLabel = Instance.new("TextLabel", flyFrame)
+flyLabel.Text = "Fly"
+flyLabel.Font = Enum.Font.GothamMedium
+flyLabel.TextSize = 15
+flyLabel.TextColor3 = Color3.fromRGB(230,230,235)
+flyLabel.TextXAlignment = Enum.TextXAlignment.Left
+flyLabel.Position = UDim2.fromOffset(12,0)
+flyLabel.Size = UDim2.new(0,60,1,0)
+flyLabel.BackgroundTransparency = 1
+
+-- TextBox (hız değeri için)
+local flyBox = Instance.new("TextBox", flyFrame)
+flyBox.Size = UDim2.new(0,120,0,28)
+flyBox.Position = UDim2.fromOffset(80,6)
+flyBox.PlaceholderText = "Hız"
+flyBox.Text = ""
+flyBox.ClearTextOnFocus = false
+flyBox.Font = Enum.Font.Gotham
+flyBox.TextSize = 14
+flyBox.TextColor3 = Color3.fromRGB(230,230,235)
+flyBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
+Instance.new("UICorner", flyBox).CornerRadius = UDim.new(0,6)
+
+-- Buton
+local flyBtn = Instance.new("TextButton", flyFrame)
+flyBtn.Size = UDim2.new(0,60,0,28)
+flyBtn.Position = UDim2.new(1,-70,0.5,-14)
+flyBtn.Text = "Etkinleştir"
+flyBtn.Font = Enum.Font.GothamBold
+flyBtn.TextSize = 14
+flyBtn.TextColor3 = Color3.fromRGB(220,220,225)
+flyBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0,6)
+
+-- Fly fonksiyonu
+local function toggleFly()
+	local player = game.Players.LocalPlayer
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	flyActive = not flyActive
+	if flyActive then
+		-- kutuya yazılan değeri hız olarak al
+		local val = tonumber(flyBox.Text)
+		if val then flySpeed = val end
+
+		flyBtn.Text = "Durdur"
+
+		flyConn = game:GetService("RunService").RenderStepped:Connect(function()
+			local cam = workspace.CurrentCamera
+			local moveDir = Vector3.new()
+
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.W) then
+				moveDir = moveDir + cam.CFrame.LookVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.S) then
+				moveDir = moveDir - cam.CFrame.LookVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.A) then
+				moveDir = moveDir - cam.CFrame.RightVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.D) then
+				moveDir = moveDir + cam.CFrame.RightVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+				moveDir = moveDir + Vector3.new(0,1,0)
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+				moveDir = moveDir - Vector3.new(0,1,0)
+			end
+
+			if moveDir.Magnitude > 0 then
+				hrp.Velocity = moveDir.Unit * flySpeed
+			else
+				hrp.Velocity = Vector3.new(0,0,0)
+			end
+		end)
+	else
+		if flyConn then flyConn:Disconnect() end
+		flyBtn.Text = "Etkinleştir"
+		-- yere bırak
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			player.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+		end
+	end
+end
+
+flyBtn.MouseButton1Click:Connect(toggleFly)
+
+--== FAKE EURO FRAME ==--
+local fakeFrame = Instance.new("Frame", farmList)
+fakeFrame.Size = flyFrame.Size
+fakeFrame.Position = flyFrame.Position + UDim2.new(0,0,0,50) -- Fly'ın altına
+fakeFrame.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", fakeFrame).CornerRadius = UDim.new(0,8)
+
+-- "Fake Euro" Label
+local fakeLabel = Instance.new("TextLabel", fakeFrame)
+fakeLabel.Text = "Fake Euro"
+fakeLabel.Font = Enum.Font.GothamMedium
+fakeLabel.TextSize = 15
+fakeLabel.TextColor3 = Color3.fromRGB(230,230,235)
+fakeLabel.TextXAlignment = Enum.TextXAlignment.Left
+fakeLabel.Position = UDim2.fromOffset(12,0)
+fakeLabel.Size = UDim2.new(0,80,1,0)
+fakeLabel.BackgroundTransparency = 1
+
+-- TextBox (miktar)
+local fakeBox = Instance.new("TextBox", fakeFrame)
+fakeBox.Size = flyBox.Size
+fakeBox.Position = flyBox.Position
+fakeBox.PlaceholderText = "Miktar"
+fakeBox.Text = ""
+fakeBox.ClearTextOnFocus = false
+fakeBox.Font = Enum.Font.Gotham
+fakeBox.TextSize = 14
+fakeBox.TextColor3 = Color3.fromRGB(230,230,235)
+fakeBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
+Instance.new("UICorner", fakeBox).CornerRadius = UDim.new(0,6)
+
+-- Buton
+local fakeBtn = Instance.new("TextButton", fakeFrame)
+fakeBtn.Size = flyBtn.Size
+fakeBtn.Position = flyBtn.Position
+fakeBtn.Text = "Ver"
+fakeBtn.Font = Enum.Font.GothamBold
+fakeBtn.TextSize = 14
+fakeBtn.TextColor3 = Color3.fromRGB(220,220,225)
+fakeBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", fakeBtn).CornerRadius = UDim.new(0,6)
+
+-- Fonksiyon: butona basıldığında EURO ekle
+fakeBtn.MouseButton1Click:Connect(function()
+	local amount = tonumber(fakeBox.Text)
+	if amount and amount > 0 then
+		local stats = player:FindFirstChild("leaderstats")
+		if stats then
+			local euro = stats:FindFirstChild("EURO")
+			if euro and euro:IsA("IntValue") then
+				euro.Value = euro.Value + amount
+			end
+		end
+	end
+end)
+
+
 
 updateFarmCanvas()
 
@@ -473,6 +649,54 @@ uname.TextSize = 16
 uname.TextXAlignment = Enum.TextXAlignment.Left
 uname.TextColor3 = Color3.fromRGB(230,230,235)
 uname.BackgroundTransparency = 1
+
+-- Sağ alt köşede EURO gösterimi
+local euroLabel = Instance.new("TextLabel", profile)
+euroLabel.AnchorPoint = Vector2.new(1,1) -- sağ alt köşe
+euroLabel.Position = UDim2.new(1, -10, 1, -10)
+euroLabel.Size = UDim2.new(0, 100, 0, 20)
+euroLabel.BackgroundTransparency = 1
+euroLabel.Font = Enum.Font.GothamBold
+euroLabel.TextSize = 14
+euroLabel.TextColor3 = Color3.fromRGB(230,230,235)
+euroLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+-- Anlık EURO değeri güncelleme
+local function updateEuro()
+	local stats = player:FindFirstChild("leaderstats")
+	if stats then
+		local euro = stats:FindFirstChild("EURO")
+		if euro then
+			euroLabel.Text = "EURO: " .. euro.Value
+			euro:GetPropertyChangedSignal("Value"):Connect(function()
+				euroLabel.Text = "EURO: " .. euro.Value
+			end)
+		end
+	end
+end
+updateEuro()
+
+--- Sol üst köşede sayaç göstergesi
+local timerLabel = Instance.new("TextLabel", profile)
+timerLabel.Position = UDim2.fromOffset(10, 0)
+timerLabel.Size = UDim2.new(0, 100, 0, 20)
+timerLabel.BackgroundTransparency = 1
+timerLabel.Font = Enum.Font.GothamBold
+timerLabel.TextSize = 14
+timerLabel.TextColor3 = Color3.fromRGB(230,230,235)
+timerLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Sayaç başlatma
+local startTime = tick() -- GUI açıldığı an
+local RunService = game:GetService("RunService")
+
+RunService.RenderStepped:Connect(function()
+	local elapsed = tick() - startTime
+	local minutes = math.floor(elapsed / 60)
+	local seconds = math.floor(elapsed % 60)
+	local timeText = string.format("%02d:%02d", minutes, seconds)
+	timerLabel.Text = timeText
+end)
 
 -- Hız frame'i
 local speedFrame = Instance.new("Frame", playerPage)
@@ -581,66 +805,7 @@ tpBtn.MouseButton1Click:Connect(function()
 		end
 	end
 end)
--- Avatar Kopyala frame'i
-local copyFrame = Instance.new("Frame", playerPage)
-copyFrame.Size = UDim2.new(0, 350, 0, 70)
-copyFrame.Position = UDim2.fromOffset(12, 280) -- tpFrame'in altına
-copyFrame.BackgroundColor3 = Color3.fromRGB(24,24,28)
-local cCorner = Instance.new("UICorner"); cCorner.CornerRadius = UDim.new(0,8); cCorner.Parent = copyFrame
-local cStroke = Instance.new("UIStroke"); cStroke.Thickness = 1; cStroke.Transparency = 0.5; cStroke.Color = Color3.fromRGB(55,55,62); cStroke.Parent = copyFrame
 
--- Sol tarafta "Avatar Kopyala" yazısı
-local copyLabel = Instance.new("TextLabel", copyFrame)
-copyLabel.Size = UDim2.new(0, 120, 1, 0)
-copyLabel.Position = UDim2.fromOffset(10,0)
-copyLabel.Text = "Avatar Kopyala"
-copyLabel.Font = Enum.Font.GothamBold
-copyLabel.TextSize = 16
-copyLabel.TextColor3 = Color3.fromRGB(230,230,235)
-copyLabel.BackgroundTransparency = 1
-copyLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Ortada TextBox
-local copyBox = Instance.new("TextBox", copyFrame)
-copyBox.Size = UDim2.new(0, 120, 0, 36)
-copyBox.Position = UDim2.fromOffset(140,17)
-copyBox.PlaceholderText = "Oyuncu adı"
-copyBox.Text = ""
-copyBox.ClearTextOnFocus = false
-copyBox.Font = Enum.Font.Gotham
-copyBox.TextSize = 14
-copyBox.TextColor3 = Color3.fromRGB(230,230,235)
-copyBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
-Instance.new("UICorner", copyBox).CornerRadius = UDim.new(0,6)
-
--- Sağ tarafta buton
-local copyBtn = Instance.new("TextButton", copyFrame)
-copyBtn.Size = UDim2.new(0, 60, 0, 36)
-copyBtn.Position = UDim2.fromOffset(270,17)
-copyBtn.Text = "Kopyala"
-copyBtn.Font = Enum.Font.GothamBold
-copyBtn.TextSize = 14
-copyBtn.TextColor3 = Color3.fromRGB(220,220,225)
-copyBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
-Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0,6)
-
--- Buton click olayı: oyuncunun avatarını kopyalar
-copyBtn.MouseButton1Click:Connect(function()
-	local input = copyBox.Text:lower()
-	for _, p in pairs(game.Players:GetPlayers()) do
-		if string.find(p.Name:lower(), input) or string.find(p.DisplayName:lower(), input) then
-			if p.Character then
-				local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
-				local myHumanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-				if humanoid and myHumanoid then
-					local desc = humanoid:GetAppliedDescription()
-					myHumanoid:ApplyDescription(desc)
-				end
-			end
-			break
-		end
-	end
-end)
 
 
 -- Başlangıç sayfası
@@ -727,7 +892,6 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
-
 
 
 
