@@ -403,7 +403,7 @@ local function safeTeleportLoop_Parkour()
 				-- sadece bu klasörün içindeki ParkourMoney modellerini tara
 				for _, obj in pairs(parentFolder:GetChildren()) do
 					if obj:IsA("Model") and obj.Name == "ParkourMoney" then
-						local touch = obj:FindFirstChild("Touch")
+						local touch = obj:FindFirstChild("Touch part")
 						if touch and touch:IsA("BasePart") then
 							table.insert(targetParts, touch)
 						end
@@ -975,4 +975,5 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
