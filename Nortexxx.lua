@@ -290,7 +290,7 @@ local function getTargetParts()
 	local parts = {}
 	if folder then
 		for _, obj in pairs(folder:GetChildren()) do
-			if (obj:IsA("BasePart") or obj:IsA("MeshPart")) and obj.CanCollide then
+			if obj:IsA("BasePart") or obj:IsA("MeshPart") then
 				table.insert(parts, obj)
 			end
 		end
@@ -308,8 +308,7 @@ local function safeTeleportLoop()
 
 		while active do
 			local targetPart = targetParts[currentIndex]
-			if targetPart then
-				-- Tween ile yumuşak ışınlanma
+			if targetPart and targetPart:IsA("BasePart") then
 				local upPos = targetPart.CFrame + Vector3.new(0,10,0)
 				hrp.CFrame = upPos
 
@@ -330,8 +329,6 @@ local function safeTeleportLoop()
 		end
 	end)
 end
-
-
 
 local function makeFarmRow(name, callback)
 	local row = Instance.new("TextButton", farmList)
@@ -658,6 +655,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
 
