@@ -290,12 +290,23 @@ local function getTargetParts()
 	local parts = {}
 	if folder then
 		for _, obj in pairs(folder:GetChildren()) do
-			if (obj:IsA("BasePart") or obj:IsA("MeshPart")) then
+			if obj:IsA("BasePart") or obj:IsA("MeshPart") then
 				table.insert(parts, obj)
 			end
 		end
 	end
 	return parts
+end
+
+local function isPartActive(part)
+	-- Part'ın içinde BillboardGui var mı ve Enabled mı?
+	for _, gui in pairs(part:GetChildren()) do
+		if gui:IsA("BillboardGui") then
+			return gui.Enabled
+		end
+	end
+	-- Eğer BillboardGui yoksa default olarak ışınlamayı kapat
+	return false
 end
 
 local function safeTeleportLoop()
@@ -308,26 +319,18 @@ local function safeTeleportLoop()
 
 		while active do
 			local targetPart = targetParts[currentIndex]
-			if targetPart then
-				local isVisible = true
-				if targetPart:IsA("BasePart") then
-					isVisible = targetPart.Transparency < 1
-				elseif targetPart:IsA("MeshPart") then
-					isVisible = targetPart.Transparency < 1 and targetPart.Visible
-				end
+			if targetPart and isPartActive(targetPart) then
+				-- Tween ile yumuşak ışınlanma
+				local upPos = targetPart.CFrame + Vector3.new(0,10,0)
+				hrp.CFrame = upPos
 
-				if not isVisible then
-					local upPos = targetPart.CFrame + Vector3.new(0,10,0)
-					hrp.CFrame = upPos
-
-					local tween = game:GetService("TweenService"):Create(
-						hrp,
-						TweenInfo.new(1, Enum.EasingStyle.Linear),
-						{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
-					)
-					tween:Play()
-					tween.Completed:Wait()
-				end
+				local tween = game:GetService("TweenService"):Create(
+					hrp,
+					TweenInfo.new(1, Enum.EasingStyle.Linear),
+					{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
+				)
+				tween:Play()
+				tween.Completed:Wait()
 			end
 
 			currentIndex = currentIndex + 1
@@ -665,5 +668,6 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
