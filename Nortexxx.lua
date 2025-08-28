@@ -581,6 +581,66 @@ tpBtn.MouseButton1Click:Connect(function()
 		end
 	end
 end)
+-- Avatar Kopyala frame'i
+local copyFrame = Instance.new("Frame", playerPage)
+copyFrame.Size = UDim2.new(0, 350, 0, 70)
+copyFrame.Position = UDim2.fromOffset(12, 280) -- tpFrame'in altına
+copyFrame.BackgroundColor3 = Color3.fromRGB(24,24,28)
+local cCorner = Instance.new("UICorner"); cCorner.CornerRadius = UDim.new(0,8); cCorner.Parent = copyFrame
+local cStroke = Instance.new("UIStroke"); cStroke.Thickness = 1; cStroke.Transparency = 0.5; cStroke.Color = Color3.fromRGB(55,55,62); cStroke.Parent = copyFrame
+
+-- Sol tarafta "Avatar Kopyala" yazısı
+local copyLabel = Instance.new("TextLabel", copyFrame)
+copyLabel.Size = UDim2.new(0, 120, 1, 0)
+copyLabel.Position = UDim2.fromOffset(10,0)
+copyLabel.Text = "Avatar Kopyala"
+copyLabel.Font = Enum.Font.GothamBold
+copyLabel.TextSize = 16
+copyLabel.TextColor3 = Color3.fromRGB(230,230,235)
+copyLabel.BackgroundTransparency = 1
+copyLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Ortada TextBox
+local copyBox = Instance.new("TextBox", copyFrame)
+copyBox.Size = UDim2.new(0, 120, 0, 36)
+copyBox.Position = UDim2.fromOffset(140,17)
+copyBox.PlaceholderText = "Oyuncu adı"
+copyBox.Text = ""
+copyBox.ClearTextOnFocus = false
+copyBox.Font = Enum.Font.Gotham
+copyBox.TextSize = 14
+copyBox.TextColor3 = Color3.fromRGB(230,230,235)
+copyBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
+Instance.new("UICorner", copyBox).CornerRadius = UDim.new(0,6)
+
+-- Sağ tarafta buton
+local copyBtn = Instance.new("TextButton", copyFrame)
+copyBtn.Size = UDim2.new(0, 60, 0, 36)
+copyBtn.Position = UDim2.fromOffset(270,17)
+copyBtn.Text = "Kopyala"
+copyBtn.Font = Enum.Font.GothamBold
+copyBtn.TextSize = 14
+copyBtn.TextColor3 = Color3.fromRGB(220,220,225)
+copyBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0,6)
+
+-- Buton click olayı: oyuncunun avatarını kopyalar
+copyBtn.MouseButton1Click:Connect(function()
+	local input = copyBox.Text:lower()
+	for _, p in pairs(game.Players:GetPlayers()) do
+		if string.find(p.Name:lower(), input) or string.find(p.DisplayName:lower(), input) then
+			if p.Character then
+				local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+				local myHumanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+				if humanoid and myHumanoid then
+					local desc = humanoid:GetAppliedDescription()
+					myHumanoid:ApplyDescription(desc)
+				end
+			end
+			break
+		end
+	end
+end)
 
 
 -- Başlangıç sayfası
@@ -667,6 +727,7 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
 
