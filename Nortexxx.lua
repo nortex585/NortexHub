@@ -379,6 +379,7 @@ local function safeTeleportLoop()
 end
 
 -- === YENİ PARKOUR FARM ===
+-- === YENİ PARKOUR FARM ===
 local function safeTeleportLoop_Parkour()
 	spawn(function()
 		local player = game.Players.LocalPlayer
@@ -386,14 +387,26 @@ local function safeTeleportLoop_Parkour()
 		local hrp = character:WaitForChild("HumanoidRootPart")
 		local currentIndex = 1
 
+		-- ParkourMoney'nin bulunduğu klasörü bul (Euro Farm'ın olduğu klasör)
+		local parentFolder
+		for _, obj in pairs(workspace:GetChildren()) do
+			if obj:IsA("Folder") and obj:FindFirstChild("ParkourMoney") then
+				parentFolder = obj
+				break
+			end
+		end
+
 		while active do
 			local targetParts = {}
-			-- Workspace içindeki ParkourMoney modellerini tara
-			for _, obj in pairs(workspace:GetDescendants()) do
-				if obj:IsA("Model") and obj.Name == "ParkourMoney" then
-					local touch = obj:FindFirstChild("Touch")
-					if touch and touch:IsA("BasePart") then
-						table.insert(targetParts, touch)
+
+			if parentFolder then
+				-- sadece bu klasörün içindeki ParkourMoney modellerini tara
+				for _, obj in pairs(parentFolder:GetChildren()) do
+					if obj:IsA("Model") and obj.Name == "ParkourMoney" then
+						local touch = obj:FindFirstChild("Touch")
+						if touch and touch:IsA("BasePart") then
+							table.insert(targetParts, touch)
+						end
 					end
 				end
 			end
@@ -401,6 +414,7 @@ local function safeTeleportLoop_Parkour()
 			if #targetParts > 0 then
 				local targetPart = targetParts[currentIndex]
 				if targetPart then
+					-- oyuncuyu yukarıdan ışınla
 					hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
 					local tween = TweenService:Create(
 						hrp,
