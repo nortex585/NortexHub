@@ -11,7 +11,7 @@ local LOCATIONS: {[string]: CFrame | Vector3 | string} = {
 	["Spawn"] = "Spawn",
 	["HalıSaha"] = "TopSpawner", -- artık HalıSaha seçilince TopSpawner'a ışınlanacak
 	["Market"] = "Shopblock2",
-	}
+}
 
 -- findCFrame fonksiyonunu güncellemek gerekirse:
 local function findCFrame(target:any): CFrame?
@@ -383,52 +383,56 @@ makeFarmRow("Parkur Money Farm", function()
 			local player = game.Players.LocalPlayer
 			local character = player.Character or player.CharacterAdded:Wait()
 			local hrp = character:WaitForChild("HumanoidRootPart")
-			local parts = {}
+			local models = {}
 
+			-- Sadece modelleri alıyoruz
 			for _, obj in pairs(parkourFolder:GetChildren()) do
-				if obj:IsA("BasePart") or obj:IsA("MeshPart") then
-					table.insert(parts, obj)
+				if obj:IsA("Model") and obj.PrimaryPart then
+					table.insert(models, obj)
 				end
 			end
 
 			local index = 1
 			while active do
-				local targetPart = parts[index]
-				if targetPart then
+				local targetModel = models[index]
+				if targetModel then
+					local targetCFrame = targetModel.PrimaryPart.CFrame + Vector3.new(0,3,0)
+
 					-- Tween ile yumuşak hareket
 					local tween = TweenService:Create(
 						hrp,
 						TweenInfo.new(1, Enum.EasingStyle.Linear),
-						{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
+						{CFrame = targetCFrame}
 					)
 					tween:Play()
 					tween.Completed:Wait()
 
 					-- Yukarı-aşağı hareket
-					local upTween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0), {CFrame = targetPart.CFrame + Vector3.new(0,6,0)})
+					local upTween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Linear), {CFrame = targetCFrame + Vector3.new(0,3,0)})
 					upTween:Play()
 					upTween.Completed:Wait()
-					local downTween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Linear, Enum.EasingDirection.Out, 0, false, 0), {CFrame = targetPart.CFrame + Vector3.new(0,3,0)})
+					local downTween = TweenService:Create(hrp, TweenInfo.new(0.3, Enum.EasingStyle.Linear), {CFrame = targetCFrame})
 					downTween:Play()
 					downTween.Completed:Wait()
 
-					-- Aynı meshpart'a diğer oyuncular da ışınlanıyor
+					-- Diğer oyuncular da aynı modele ışınlanıyor
 					for _, p in pairs(game.Players:GetPlayers()) do
 						if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-							p.Character.HumanoidRootPart.CFrame = targetPart.CFrame + Vector3.new(0,3,0)
+							p.Character.HumanoidRootPart.CFrame = targetCFrame
 						end
 					end
 				end
 
 				index = index + 1
-				if index > #parts then
+				if index > #models then
 					index = 1
 				end
-				wait(2) -- parça değiştirme süresi
+				wait(2) -- model değiştirme süresi
 			end
 		end)
 	end
 end)
+
 
 
 updateFarmCanvas()
