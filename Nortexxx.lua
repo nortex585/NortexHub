@@ -259,8 +259,8 @@ end
 
 
 --== FARM SAYFASI ==--
-makeMenuButton("Farm")
-local farmPage = createPage("Farm")
+makeMenuButton("Main")
+local farmPage = createPage("Main")
 --== FARM SAYFASI BUTONLARI ==--
 local farmList = Instance.new("ScrollingFrame", farmPage)
 farmList.Size = UDim2.fromScale(1,1)
@@ -667,5 +667,6 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
 		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 	end
 end)
+
 
 
