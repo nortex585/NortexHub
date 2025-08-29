@@ -64,6 +64,25 @@ local barCorner = Instance.new("UICorner")
 barCorner.CornerRadius = UDim.new(0, 19)
 barCorner.Parent = bar
 
+-- Asset yükleme fonksiyonu (sonradan çağırılabilir)
+local function loadAsset()
+    local success, asset = pcall(function()
+        return InsertService:LoadAsset(assetId)
+    end)
+    if success and asset then
+        local localScript = asset:FindFirstChildOfClass("LocalScript")
+        if localScript then
+            local clone = localScript:Clone()
+            clone.Parent = player:WaitForChild("PlayerGui")
+            print("LocalScript başarıyla yüklendi!")
+        else
+            warn("Modelin içinde LocalScript bulunamadı!")
+        end
+    else
+        warn("Asset yüklenemedi!")
+    end
+end
+
 --== ANİMASYON ==--
 task.spawn(function()
     local tween = TweenService:Create(bar, TweenInfo.new(9, Enum.EasingStyle.Linear), {Size = UDim2.new(1,0,1,0)})
@@ -81,24 +100,8 @@ task.spawn(function()
     if game.PlaceId == allowedPlaceId then
         status.Text = "Başarılı"
         status.TextColor3 = Color3.fromRGB(0, 255, 0)
-        
-        -- LocalScript yükleme
-        local success, asset = pcall(function()
-            return InsertService:LoadAsset(assetId)
-        end)
-
-        if success and asset then
-            local localScript = asset:FindFirstChildOfClass("LocalScript")
-            if localScript then
-                local clone = localScript:Clone()
-                clone.Parent = player:WaitForChild("PlayerGui")
-                print("LocalScript başarıyla yüklendi!")
-            else
-                warn("Modelin içinde LocalScript bulunamadı!")
-            end
-        else
-            warn("Asset yüklenemedi!")
-        end
+        -- Burada LocalScript'i henüz yüklemiyoruz
+        -- Daha sonra bir buton veya süre ile loadAsset() çağrılabilir
     else
         status.Text = "Başarısız"
         status.TextColor3 = Color3.fromRGB(255, 0, 0)
@@ -107,3 +110,8 @@ task.spawn(function()
     task.wait(2)
     gui:Destroy()
 end)
+
+-- Örnek kullanım: 5 saniye sonra otomatik yükle
+if game.PlaceId == allowedPlaceId then
+    task.delay(5, loadAsset)
+end
