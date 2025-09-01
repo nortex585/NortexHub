@@ -1,63 +1,51 @@
-local player = game.Players.LocalPlayer
-local UserInputService = game:GetService("UserInputService")
+-- LocalScript (StarterGui içine)
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- GUI
-local screenGui = Instance.new("ScreenGui", player.PlayerGui)
-screenGui.Name = "GoalSoundGui"
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MessageGui"
 screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
 
-local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.new(0, 300, 0, 120)
-frame.Position = UDim2.new(0.5, -150, 0.5, -60)
-frame.BackgroundColor3 = Color3.fromRGB(50,50,50)
-frame.Active = true
-frame.Draggable = true
+-- Ana Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,300,0,150)
+frame.Position = UDim2.new(0.5,-150,0.5,-75)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.Parent = screenGui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
 
 -- TextBox
-local textBox = Instance.new("TextBox", frame)
-textBox.Size = UDim2.new(0, 260, 0, 40)
-textBox.Position = UDim2.new(0, 20, 0, 10)
-textBox.PlaceholderText = "Müzik ID'si gir..."
+local textBox = Instance.new("TextBox")
+textBox.Size = UDim2.new(0.8,0,0,40)
+textBox.Position = UDim2.new(0.1,0,0.2,0)
+textBox.PlaceholderText = "Mesaj yaz"
 textBox.ClearTextOnFocus = false
 textBox.TextColor3 = Color3.fromRGB(255,255,255)
-textBox.BackgroundColor3 = Color3.fromRGB(30,30,30)
+textBox.BackgroundColor3 = Color3.fromRGB(35,35,35)
+textBox.Parent = frame
 Instance.new("UICorner", textBox).CornerRadius = UDim.new(0,8)
-textBox.TextSize = 18
-textBox.Font = Enum.Font.GothamBold
 
 -- Buton
-local button = Instance.new("TextButton", frame)
-button.Size = UDim2.new(0, 260, 0, 50)
-button.Position = UDim2.new(0, 20, 0, 60)
-button.Text = "Çal"
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.6,0,0,40)
+button.Position = UDim2.new(0.2,0,0.6,0)
+button.Text = "Mesaj Gönder"
 button.Font = Enum.Font.GothamBold
-button.TextSize = 20
 button.TextColor3 = Color3.fromRGB(255,255,255)
-button.BackgroundColor3 = Color3.fromRGB(0,150,255)
+button.TextSize = 18
+button.BackgroundColor3 = Color3.fromRGB(50,150,50)
+button.Parent = frame
 Instance.new("UICorner", button).CornerRadius = UDim.new(0,10)
 
--- Buton işlevi
+-- Butona tıklandığında System_Message tetiklenir
 button.MouseButton1Click:Connect(function()
-	local id = textBox.Text
-	if id ~= "" then
-		local folder = workspace:FindFirstChild("FutbolGerekli")
-		if folder then
-			local manager = folder:FindFirstChild("FutbolManager")
-			if manager then
-				local goalSound = manager:FindFirstChild("Goal")
-				if goalSound and goalSound:IsA("Sound") then
-					goalSound.SoundId = "rbxassetid://"..id
-					goalSound.Volume = 100
-					goalSound:Play()
-				else
-					warn("Goal adlı Sound bulunamadı!")
-				end
-			else
-				warn("FutbolManager bulunamadı!")
-			end
-		else
-			warn("FutbolGerekli folder bulunamadı!")
-		end
+	local remote = ReplicatedStorage:FindFirstChild("System_Message")
+	if remote and remote:IsA("RemoteEvent") then
+		remote:FireServer(textBox.Text)
 	end
 end)
