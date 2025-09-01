@@ -1,210 +1,334 @@
---// Rael Hub GUI - LocalScript (Güncel)
---// StarterGui içine koyabilirsin
+-- LocalScript (StarterPlayerScripts veya StarterGui içine)
+-- Space Hub | Brookhaven (Sekmeler: Home, Farm, Teleport, Player, Ayar)
 
-local player = game.Players.LocalPlayer
-local char = player.Character or player.CharacterAdded:Wait()
-local humanoid = char:WaitForChild("Humanoid")
-local UserInputService = game:GetService("UserInputService")
+--==[ SERVISLER ]==--
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
 
--- ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "RaelHub"
-screenGui.Parent = player:WaitForChild("PlayerGui")
-screenGui.ResetOnSpawn = false
+--==[ KONUM AYARLARI ]==--
+local LOCATIONS: {[string]: CFrame | Vector3 | string} = {
+	["Spawn"] = "Spawn",
+	["HalıSaha"] = "TopSpawner", -- artık HalıSaha seçilince TopSpawner'a ışınlanacak
+	["Market"] = "Shopblock2",
+}
 
--- Ana Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 600, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -300, 0.5, -175)
-mainFrame.BackgroundColor3 = Color3.fromRGB(12, 60, 35)
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 12)
+-- findCFrame fonksiyonunu güncellemek gerekirse:
+local function findCFrame(target:any): CFrame?
+	if typeof(target) == "CFrame" then return target end
+	if typeof(target) == "Vector3" then return CFrame.new(target) end
+	if typeof(target) == "string" then
+		if target == "Spawn" then
+			-- Spawn ile başlayan model bul
+			local model
+			for _, obj in pairs(workspace:GetDescendants()) do
+				if obj:IsA("Model") and string.find(obj.Name, "^Spawn") then
+					model = obj
+					break
+				end
+			end
+			if model then
+				-- Modelin içindeki Spawn ile başlayan part bul
+				for _, part in pairs(model:GetDescendants()) do
+					if part:IsA("BasePart") and string.find(part.Name, "^Spawn") then
+						return part.CFrame + Vector3.new(0,5,0)
+					end
+				end
+			end
+		elseif target == "TopSpawner" then
+			local inst = workspace:FindFirstChild("FutbolGerekli") and workspace.FutbolGerekli:FindFirstChild("TopSpawner")
+			if inst then return inst.CFrame + Vector3.new(0,5,0) end
+		else
+			local inst = workspace:FindFirstChild(target, true)
+			if inst and inst:IsA("BasePart") then
+				return inst.CFrame + Vector3.new(0, 5, 0)
+			elseif inst and inst.PrimaryPart then
+				return inst.PrimaryPart.CFrame + Vector3.new(0, 5, 0)
+			end
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("BasePart") and string.find(string.lower(obj.Name), string.lower(target)) then
+					return obj.CFrame + Vector3.new(0, 5, 0)
+				end
+			end
+		end
+	end
+	return nil
+end
 
--- Başlık kısmı
+
+
+local function getHRP(char: Model?): BasePart?
+	char = char or player.Character
+	if not char then return nil end
+	return char:FindFirstChild("HumanoidRootPart") :: BasePart
+end
+
+local function safeTeleport(toCFrame: CFrame)
+	local hrp = getHRP(player.Character or player.CharacterAdded:Wait())
+	if not hrp then return end
+	local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+
+	if hum then hum.Sit = false end
+	local oldAnchored = hrp.Anchored
+	hrp.Anchored = true
+	hrp.CFrame = toCFrame
+	task.wait(0.05)
+	hrp.Anchored = oldAnchored
+end
+
+--==[ UI OLUSTURMA ]==--
+local pg = player:WaitForChild("PlayerGui")
+local gui = Instance.new("ScreenGui")
+gui.Name = "SpaceHubUI"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Parent = pg
+
+-- Ana pencere
+local window = Instance.new("Frame")
+window.Size = UDim2.fromOffset(520, 330)
+window.Position = UDim2.fromScale(0.5, 0.5)
+window.AnchorPoint = Vector2.new(0.5, 0.5)
+window.BackgroundColor3 = Color3.fromRGB(22, 22, 24)
+window.Parent = gui
+
+
+local stroke = Instance.new("UIStroke")
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+stroke.Thickness = 1.5
+stroke.Transparency = 0.35
+stroke.Color = Color3.fromRGB(60, 60, 66)
+stroke.Parent = window
+
+-- Üst Bar
+local topbar = Instance.new("Frame")
+topbar.Size = UDim2.new(1, 0, 0, 34)
+topbar.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+topbar.Parent = window
+
+-- Solundaki ImageLabel
+local topImage = Instance.new("ImageLabel", topbar)
+topImage.Size = UDim2.fromOffset(24, 24)
+topImage.Position = UDim2.fromOffset(8, 5)
+topImage.BackgroundTransparency = 1
+topImage.Image = "rbxassetid://88106479644374"
+
+-- Başlık yazısı
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -80, 0, 40)
-title.Position = UDim2.new(0, 10, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "Nortex Hub | Türk Sohbet V.0.3"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.TextXAlignment = Enum.TextXAlignment.Left
+title.Text = "Nortex Hub | Türk Sohbet V.0.2"
 title.Font = Enum.Font.GothamBold
-title.TextSize = 20
-title.Parent = mainFrame
+title.TextSize = 16
+title.TextColor3 = Color3.fromRGB(230, 230, 235)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Position = UDim2.fromOffset(40, 0)
+title.Size = UDim2.new(1, -52, 1, 0)
+title.BackgroundTransparency = 1
+title.Parent = topbar
 
--- Kapatma butonu
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -35, 0, 5)
-closeBtn.Text = "X"
-closeBtn.TextSize = 20
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Parent = mainFrame
-closeBtn.MouseButton1Click:Connect(function()
-	mainFrame.Visible = false
-end)
 
--- Minimize butonu
-local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -70, 0, 5)
-minimizeBtn.Text = "-"
-minimizeBtn.TextSize = 28
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
-minimizeBtn.BackgroundTransparency = 1
-minimizeBtn.Parent = mainFrame
+-- Sağ üst butonlar
+local btnContainer = Instance.new("Frame")
+btnContainer.BackgroundTransparency = 1
+btnContainer.Size = UDim2.fromOffset(80, 34)
+btnContainer.Position = UDim2.new(1, -84, 0, 0)
+btnContainer.Parent = topbar
 
--- İçerik frame
-local contentFrame = Instance.new("Frame")
-contentFrame.Size = UDim2.new(1, -20, 1, -50)
-contentFrame.Position = UDim2.new(0,10,0,50)
-contentFrame.BackgroundTransparency = 1
-contentFrame.Parent = mainFrame
+local function makeTopButton(txt)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.fromOffset(36, 24)
+	b.BackgroundColor3 = Color3.fromRGB(38,38,44)
+	b.Text = txt
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 14
+	b.TextColor3 = Color3.fromRGB(220,220,225)
+	b.Parent = btnContainer
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,6)
+	return b
+end
 
--- Minimize sistemi
-local minimized = false
+local isMinimized = false -- başlangıçta minimizet değil
+
+local minimizeBtn = makeTopButton("–")
+minimizeBtn.Position = UDim2.fromOffset(4, 5)
+
 minimizeBtn.MouseButton1Click:Connect(function()
-	minimized = not minimized
-	if minimized then
-		contentFrame.Visible = false
-		mainFrame.Size = UDim2.new(0, 600, 0, 40)
-		minimizeBtn.Text = "+"
+	if isMinimized then
+		minimizeBtn.Text = "–"  -- geri açınca –
+		isMinimized = false
+		-- burada frame'i açma kodunu ekleyebilirsin
 	else
-		contentFrame.Visible = true
-		mainFrame.Size = UDim2.new(0, 600, 0, 350)
-		minimizeBtn.Text = "-"
+		minimizeBtn.Text = "+"  -- minimize ettiğinde +
+		isMinimized = true
+		-- burada frame'i küçültme/gizleme kodunu ekleyebilirsin
 	end
 end)
 
--- Sol Menü (ScrollingFrame)
-local menuFrame = Instance.new("ScrollingFrame")
-menuFrame.Size = UDim2.new(0, 160, 1, 0)
-menuFrame.Position = UDim2.new(0, 0, 0, 0)
-menuFrame.BackgroundTransparency = 1
-menuFrame.Parent = contentFrame
-menuFrame.ScrollBarThickness = 6
-menuFrame.CanvasSize = UDim2.new(0,0,2,0)
+local closeBtn = makeTopButton("×")
+closeBtn.Position = UDim2.fromOffset(44, 5)
+closeBtn.MouseButton1Click:Connect(function()
+	-- kapatma işlemi
+	minimizeBtn.Parent:Destroy()
+end)
 
-local UIListLayout = Instance.new("UIListLayout", menuFrame)
-UIListLayout.Padding = UDim.new(0, 5)
+
+-- Gövde
+local body = Instance.new("Frame")
+body.Size = UDim2.new(1,0,1,-34)
+body.Position = UDim2.fromOffset(0,34)
+body.BackgroundTransparency = 1
+body.Parent = window
+
+-- Sol menü (Sekmeler)
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 140, 1, 0)
+sidebar.BackgroundColor3 = Color3.fromRGB(28,28,32)
+sidebar.Parent = body
+
+local menuLayout = Instance.new("UIListLayout", sidebar)
+menuLayout.Padding = UDim.new(0,5)
+menuLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+menuLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+-- Sağ içerik (Sayfalar)
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1,-148,1,-16)
+content.Position = UDim2.fromOffset(148,8)
+content.BackgroundColor3 = Color3.fromRGB(32,32,36)
+content.Parent = body
+Instance.new("UICorner", content).CornerRadius = UDim.new(0,10)
 
 local pages = {}
-local menuButtons = {"Home","Main","Teleport","Player","Ayar"}
-local rightFrame = Instance.new("Frame")
-rightFrame.Size = UDim2.new(1, -170, 1, 0)
-rightFrame.Position = UDim2.new(0, 170, 0, 0)
-rightFrame.BackgroundTransparency = 1
-rightFrame.Parent = contentFrame
+local currentPage = nil
 
--- Sayfa oluşturma fonksiyonu
+local function switchPage(name)
+	if currentPage then pages[currentPage].Visible = false end
+	if pages[name] then
+		pages[name].Visible = true
+		currentPage = name
+	end
+end
+
+--== SAYFA OLUSTURMA FONKSIYONU ==--
 local function createPage(name)
-	local page = Instance.new("Frame")
-	page.Size = UDim2.new(1,0,1,0)
+	local page = Instance.new("Frame", content)
+	page.Name = name
+	page.Size = UDim2.fromScale(1,1)
 	page.BackgroundTransparency = 1
 	page.Visible = false
-	page.Name = name
-	page.Parent = rightFrame
+	pages[name] = page
 	return page
 end
 
 -- Menü butonları
-for _,name in ipairs(menuButtons) do
+local function makeMenuButton(name)
 	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0.9, 0, 0, 30)
-	btn.BackgroundColor3 = Color3.fromRGB(20,100,60)
+	btn.Size = UDim2.new(1,-20,0,30)
+	btn.BackgroundColor3 = Color3.fromRGB(38,38,44)
 	btn.Text = name
-	btn.TextColor3 = Color3.fromRGB(255,255,255)
-	btn.Font = Enum.Font.GothamBold
+	btn.Font = Enum.Font.GothamMedium
 	btn.TextSize = 14
-	btn.Parent = menuFrame
+	btn.TextColor3 = Color3.fromRGB(230,230,235)
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
-
-	local page = createPage(name)
-	pages[name] = page
-
+	btn.Parent = sidebar
 	btn.MouseButton1Click:Connect(function()
-		for _,p in pairs(pages) do p.Visible = false end
-		page.Visible = true
+		switchPage(name)
 	end)
 end
 
--- Home Page
--- Home sayfası için ScrollingFrame
-local homeScroll = Instance.new("ScrollingFrame")
-homeScroll.Size = UDim2.new(1,0,1,0)
-homeScroll.CanvasSize = UDim2.new(0,0,0,0) -- otomatik içerik yüksekliğine göre güncellenecek
-homeScroll.ScrollBarThickness = 6
-homeScroll.BackgroundTransparency = 1
-homeScroll.Parent = pages["Home"]
+--== HOME SAYFASI ==--
+makeMenuButton("Home")
+local homePage = createPage("Home")
 
--- UIListLayout (içindekileri alt alta düzgün dizmek için)
-local listLayout = Instance.new("UIListLayout")
-listLayout.Padding = UDim.new(0,20) -- frame'ler arası boşluk
-listLayout.FillDirection = Enum.FillDirection.Vertical
-listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-listLayout.Parent = homeScroll
-
--- Home Frame (artık scrollingframe içinde)
-local homeFrame = Instance.new("Frame")
-homeFrame.Size = UDim2.new(0.8,0,0,180)
-homeFrame.BackgroundColor3 = Color3.fromRGB(20,100,60)
-homeFrame.Parent = homeScroll
-Instance.new("UICorner", homeFrame).CornerRadius = UDim.new(0,15)
+-- Ana başlık frame (karakter çerçevesi tarzında)
+local homeProfile = Instance.new("Frame", homePage)
+homeProfile.Size = UDim2.new(0, 350, 0, 70)
+homeProfile.Position = UDim2.fromOffset(12, 20)
+homeProfile.BackgroundColor3 = Color3.fromRGB(24,24,28)
+Instance.new("UICorner", homeProfile).CornerRadius = UDim.new(0,8)
+local homeStroke = Instance.new("UIStroke", homeProfile)
+homeStroke.Thickness = 1
+homeStroke.Transparency = 0.5
+homeStroke.Color = Color3.fromRGB(55,55,62)
 
 -- ImageLabel
-local logo = Instance.new("ImageLabel")
-logo.Size = UDim2.new(0,100,0,100)
-logo.Position = UDim2.new(0.5,0,0,-10)
-logo.AnchorPoint = Vector2.new(0.5,0)
-logo.BackgroundTransparency = 1
-logo.Image = "rbxassetid://72698958184238"
-logo.Parent = homeFrame
+local homeImage = Instance.new("ImageLabel", homeProfile)
+homeImage.Size = UDim2.fromOffset(60,60)
+homeImage.Position = UDim2.fromOffset(10,5)
+homeImage.BackgroundTransparency = 1
+homeImage.Image = "rbxassetid://88106479644374"
 
--- Discord Buton
-local discordButton = Instance.new("TextButton")
-discordButton.Size = UDim2.new(0.6,0,0,40)
-discordButton.Position = UDim2.new(0.5,0,1,-30)
-discordButton.AnchorPoint = Vector2.new(0.5,1)
-discordButton.Text = "Discord Link"
-discordButton.Font = Enum.Font.GothamBold
-discordButton.TextSize = 18
-discordButton.TextColor3 = Color3.fromRGB(255,255,255)
-discordButton.BackgroundColor3 = Color3.fromRGB(30,120,80)
-discordButton.Parent = homeFrame
-Instance.new("UICorner", discordButton).CornerRadius = UDim.new(0,12)
+-- Başlık yazısı
+local homeTitle = Instance.new("TextLabel", homeProfile)
+homeTitle.Size = UDim2.new(1,-80,1,0)
+homeTitle.Position = UDim2.fromOffset(80,0)
+homeTitle.Font = Enum.Font.GothamBold
+homeTitle.Text = "Türk Sohbet Oyunu Hub"
+homeTitle.TextSize = 16
+homeTitle.TextXAlignment = Enum.TextXAlignment.Left
+homeTitle.TextColor3 = Color3.fromRGB(230,230,235)
+homeTitle.BackgroundTransparency = 1
 
-discordButton.MouseButton1Click:Connect(function()
-	setclipboard("https://discord.gg/YOURDISCORDLINK")
-	print("Discord linki kopyalandı! ✅")
-end)
+-- Alt küçük frameler
+local smallFrames = {}
+local texts = {"Euro Farm Eklendi", "Fly", "Teleport Eklendi", "Hız Ayarlama Eklendi"}
+for i, txt in ipairs(texts) do
+	local frame = Instance.new("Frame", homePage)
+	frame.Size = UDim2.new(0, 160, 0, 40)
+	frame.Position = UDim2.fromOffset(12 + ((i-1)%2)*170, 100 + math.floor((i-1)/2)*50)
+	frame.BackgroundColor3 = Color3.fromRGB(24,24,28)
+	Instance.new("UICorner", frame).CornerRadius = UDim.new(0,6)
+	local stroke = Instance.new("UIStroke", frame)
+	stroke.Thickness = 1
+	stroke.Transparency = 0.5
+	stroke.Color = Color3.fromRGB(55,55,62)
 
--- Main Page
-local TweenService = game:GetService("TweenService")
+	local label = Instance.new("TextLabel", frame)
+	label.Size = UDim2.new(1,0,1,0)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 14
+	label.TextColor3 = Color3.fromRGB(230,230,235)
+	label.Text = txt
+	label.TextXAlignment = Enum.TextXAlignment.Center
+	label.TextYAlignment = Enum.TextYAlignment.Center
 
--- FARM SYSTEM DEĞİŞKENLERİ
-local euroFarmActive = false
-local parkourFarmActive = false
+	table.insert(smallFrames, frame)
+end
 
--- EuroFarm için hedef bulma
-local euroFolder
+
+--== FARM SAYFASI ==--
+makeMenuButton("Main")
+local farmPage = createPage("Main")
+--== FARM SAYFASI BUTONLARI ==--
+local farmList = Instance.new("ScrollingFrame", farmPage)
+farmList.Size = UDim2.fromScale(1,1)
+farmList.BackgroundTransparency = 1
+farmList.ScrollBarThickness = 6
+farmList.CanvasSize = UDim2.new(0,0,0,0)
+
+local farmLayout = Instance.new("UIListLayout", farmList)
+farmLayout.Padding = UDim.new(0,8)
+farmLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function updateFarmCanvas()
+	farmList.CanvasSize = UDim2.fromOffset(0, farmLayout.AbsoluteContentSize.Y + 12)
+end
+farmLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateFarmCanvas)
+
+local active = false
+local folder
 for _, obj in pairs(workspace:GetChildren()) do
 	if obj:IsA("Folder") and obj:FindFirstChild("ParkourMoney") then
-		euroFolder = obj
+		folder = obj
 		break
 	end
 end
 
-local function getTargetParts(folder)
+local function getTargetParts()
 	local parts = {}
 	if folder then
 		for _, obj in pairs(folder:GetChildren()) do
-			if (obj:IsA("BasePart") or obj:IsA("MeshPart")) and obj.CanCollide then
+			if obj:IsA("BasePart") or obj:IsA("MeshPart") then
 				table.insert(parts, obj)
 			end
 		end
@@ -212,18 +336,26 @@ local function getTargetParts(folder)
 	return parts
 end
 
--- EuroFarm loop
-local function euroFarmLoop()
+local function safeTeleportLoop()
 	spawn(function()
 		local player = game.Players.LocalPlayer
 		local character = player.Character or player.CharacterAdded:Wait()
 		local hrp = character:WaitForChild("HumanoidRootPart")
 		local currentIndex = 1
 
-		while euroFarmActive do
-			local targets = getTargetParts(euroFolder)
-			if #targets > 0 then
-				local targetPart = targets[currentIndex]
+		while active do
+			-- Sadece CanCollide = true olan parçaları al
+			local targetParts = {}
+			if folder then
+				for _, obj in pairs(folder:GetChildren()) do
+					if (obj:IsA("BasePart") or obj:IsA("MeshPart")) and obj.CanCollide then
+						table.insert(targetParts, obj)
+					end
+				end
+			end
+
+			if #targetParts > 0 then
+				local targetPart = targetParts[currentIndex]
 				if targetPart then
 					hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
 					local tween = TweenService:Create(
@@ -234,336 +366,613 @@ local function euroFarmLoop()
 					tween:Play()
 					tween.Completed:Wait()
 				end
-				currentIndex += 1
-				if currentIndex > #targets then
+
+				currentIndex = currentIndex + 1
+				if currentIndex > #targetParts then
 					currentIndex = 1
 				end
 			end
+
 			task.wait(3)
 		end
 	end)
 end
 
--- ParkourMoney Farm loop (benzer)
-local function parkourFarmLoop()
+-- === YENİ PARKOUR FARM ===
+-- === YENİ PARKOUR FARM ===
+local function safeTeleportLoop_Parkour()
 	spawn(function()
 		local player = game.Players.LocalPlayer
 		local character = player.Character or player.CharacterAdded:Wait()
 		local hrp = character:WaitForChild("HumanoidRootPart")
+		local currentIndex = 1
 
-		while parkourFarmActive do
-			-- Buraya ParkourMoney farm için teleport / hareket kodunu yaz
-			print("ParkourMoney Farm Çalışıyor ✅")
-			task.wait(2)
-		end
-	end)
-end
-
-
--- SWITCH CARD SİSTEMİ
-local nextY = 30
-local cardSpacing = 80
-
-local function createSwitchCard(parent, titleText, descText, callback)
-	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(0.9,0,0,45)
-	frame.Position = UDim2.new(0,15,0,nextY)
-	frame.BackgroundColor3 = Color3.fromRGB(20,100,60)
-	frame.Parent = parent
-	Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
-
-	nextY = nextY + cardSpacing
-
-	local title = Instance.new("TextLabel")
-	title.Size = UDim2.new(1,0,0,20)
-	title.Position = UDim2.new(0,5,0,-22)
-	title.Text = titleText
-	title.TextColor3 = Color3.fromRGB(255,255,255)
-	title.Font = Enum.Font.GothamBold
-	title.TextSize = 16
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.BackgroundTransparency = 1
-	title.Parent = frame
-
-	local desc = Instance.new("TextLabel")
-	desc.Size = UDim2.new(0.6,0,0,20)
-	desc.AnchorPoint = Vector2.new(0,0.5)
-	desc.Position = UDim2.new(0,10,0.5,0)
-	desc.Text = descText
-	desc.TextColor3 = Color3.fromRGB(200,200,200)
-	desc.Font = Enum.Font.Gotham
-	desc.TextSize = 13
-	desc.TextXAlignment = Enum.TextXAlignment.Left
-	desc.BackgroundTransparency = 1
-	desc.Parent = frame
-
-	local switchBack = Instance.new("Frame")
-	switchBack.Size = UDim2.new(0,55,0,22)
-	switchBack.AnchorPoint = Vector2.new(1,0.5)
-	switchBack.Position = UDim2.new(1,-15,0.5,0)
-	switchBack.BackgroundColor3 = Color3.fromRGB(80,80,80)
-	switchBack.Parent = frame
-	Instance.new("UICorner", switchBack).CornerRadius = UDim.new(0,12)
-
-	local knob = Instance.new("Frame")
-	knob.Size = UDim2.new(0,20,0,20)
-	knob.Position = UDim2.new(0,1,0,1)
-	knob.BackgroundColor3 = Color3.fromRGB(220,220,220)
-	knob.Parent = switchBack
-	Instance.new("UICorner", knob).CornerRadius = UDim.new(1,0)
-
-	local switchOn = false
-	switchBack.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			switchOn = not switchOn
-			if switchOn then
-				knob:TweenPosition(UDim2.new(1,-21,0,1),"Out","Quad",0.2,true)
-				switchBack.BackgroundColor3 = Color3.fromRGB(0,200,100)
-				print(titleText.." AÇILDI ✅")
-				if callback then callback(true) end
-			else
-				knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Quad",0.2,true)
-				switchBack.BackgroundColor3 = Color3.fromRGB(80,80,80)
-				print(titleText.." KAPANDI ❌")
-				if callback then callback(false) end
+		-- ParkourMoney'nin bulunduğu klasörü bul (Euro Farm'ın olduğu klasör)
+		local parentFolder
+		for _, obj in pairs(workspace:GetChildren()) do
+			if obj:IsA("Folder") and obj:FindFirstChild("ParkourMoney") then
+				parentFolder = obj
+				break
 			end
 		end
+
+		while active do
+			local targetParts = {}
+
+			if parentFolder then
+				-- sadece bu klasörün içindeki ParkourMoney modellerini tara
+				for _, obj in pairs(parentFolder:GetChildren()) do
+					if obj:IsA("Model") and obj.Name == "ParkourMoney" then
+						local touch = obj:FindFirstChild("Touch")
+						if touch and touch:IsA("BasePart") then
+							table.insert(targetParts, touch)
+						end
+					end
+				end
+			end
+
+			if #targetParts > 0 then
+				local targetPart = targetParts[currentIndex]
+				if targetPart then
+					-- oyuncuyu yukarıdan ışınla
+					hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
+					local tween = TweenService:Create(
+						hrp,
+						TweenInfo.new(1, Enum.EasingStyle.Linear),
+						{CFrame = targetPart.CFrame + Vector3.new(0,3,0)}
+					)
+					tween:Play()
+					tween.Completed:Wait()
+				end
+
+				currentIndex = currentIndex + 1
+				if currentIndex > #targetParts then
+					currentIndex = 1
+				end
+			end
+
+			task.wait(3)
+		end
 	end)
 end
 
+-- === FARM ROW FUNKSIYONU ===
+local function makeFarmRow(name, callback)
+	local row = Instance.new("TextButton", farmList)
+	row.Size = UDim2.new(1,-20,0,40)
+	row.BackgroundColor3 = Color3.fromRGB(38,38,44)
+	row.Text = ""
+	Instance.new("UICorner", row).CornerRadius = UDim.new(0,8)
 
--- MAIN SAYFASINA EKLE
-nextY = 30
-createSwitchCard(pages["Main"], "Euro Farm", "Otomatik Euro toplama", function(state)
-	euroFarmActive = state
-	if state then
-		euroFarmLoop()
-	end
-end)
+	local lbl = Instance.new("TextLabel", row)
+	lbl.Text = name
+	lbl.Font = Enum.Font.GothamMedium
+	lbl.TextSize = 15
+	lbl.TextColor3 = Color3.fromRGB(230,230,235)
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	lbl.Position = UDim2.fromOffset(12,0)
+	lbl.Size = UDim2.new(1,-60,1,0)
+	lbl.BackgroundTransparency = 1
 
-createSwitchCard(pages["Main"], "ParkourMoney Farm", "Otomatik para farm", function(state)
-	parkourFarmActive = state
-	if state then
-		parkourFarmLoop()
-	end
-end)
+	local dot = Instance.new("Frame", row)
+	dot.Size = UDim2.fromOffset(12,12)
+	dot.Position = UDim2.new(1,-22,0.5,-6)
+	dot.BackgroundColor3 = Color3.fromRGB(54,54,62)
+	Instance.new("UICorner", dot).CornerRadius = UDim.new(1,0)
 
-
--- Teleport Page
--- TELEPORT PAGE SCROLLINGFRAME
-local teleportScroll = Instance.new("ScrollingFrame")
-teleportScroll.Size = UDim2.new(1,0,1,0)
-teleportScroll.CanvasSize = UDim2.new(0,0,2,0)
-teleportScroll.ScrollBarThickness = 6
-teleportScroll.BackgroundTransparency = 1
-teleportScroll.Parent = pages["Teleport"]
-
-local nextY = 20
-local cardSpacing = 70
-
-local function createTeleportCard(parent, titleText, onClick)
-	local frame = Instance.new("Frame")
-	frame.Size = UDim2.new(0.9,0,0,45)
-	frame.Position = UDim2.new(0,15,0,nextY)
-	frame.BackgroundColor3 = Color3.fromRGB(20,100,60)
-	frame.Parent = parent
-	Instance.new("UICorner", frame).CornerRadius = UDim.new(0,10)
-
-	nextY = nextY + cardSpacing
-
-	local title = Instance.new("TextLabel")
-	title.Size = UDim2.new(0.7,0,1,0)
-	title.Position = UDim2.new(0,10,0,0)
-	title.Text = titleText
-	title.TextColor3 = Color3.fromRGB(255,255,255)
-	title.Font = Enum.Font.GothamBold
-	title.TextSize = 18
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.BackgroundTransparency = 1
-	title.Parent = frame
-
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(0,40,0,40)
-	button.AnchorPoint = Vector2.new(1,0.5)
-	button.Position = UDim2.new(1,-10,0.5,0)
-	button.Text = ">"
-	button.TextColor3 = Color3.fromRGB(255,255,255)
-	button.Font = Enum.Font.FredokaOne
-	button.TextSize = 20
-	button.BackgroundColor3 = Color3.fromRGB(20,100,60)
-	button.Parent = frame
-	Instance.new("UICorner", button).CornerRadius = UDim.new(1,0)
-
-	button.MouseButton1Click:Connect(function()
-		if onClick then onClick() end
-	end)
-end
-
-
--- TELEPORT KARTLARI
-createTeleportCard(teleportScroll, "HalıSaha", function()
-	local player = game.Players.LocalPlayer
-	local char = player.Character or player.CharacterAdded:Wait()
-	local hrp = char:WaitForChild("HumanoidRootPart")
-
-	local target = workspace:FindFirstChild("FutbolGerekli")
-	if target and target:FindFirstChild("TopSpawner") then
-		hrp.CFrame = target.TopSpawner.CFrame + Vector3.new(0,3,0)
-	end
-end)
-
-createTeleportCard(teleportScroll, "Market", function()
-	local player = game.Players.LocalPlayer
-	local char = player.Character or player.CharacterAdded:Wait()
-	local hrp = char:WaitForChild("HumanoidRootPart")
-
-	local target = workspace:FindFirstChild("Shopblock2")
-	if target then
-		hrp.CFrame = target.CFrame + Vector3.new(0,3,0)
-	end
-end)
-
-createTeleportCard(teleportScroll, "Spawn", function()
-	local player = game.Players.LocalPlayer
-	local char = player.Character or player.CharacterAdded:Wait()
-	local hrp = char:WaitForChild("HumanoidRootPart")
-
-	local target = workspace:FindFirstChild("Spawn")
-	if target and target:FindFirstChild("SpawnLocation") then
-		hrp.CFrame = target.SpawnLocation.CFrame + Vector3.new(0,3,0)
-	end
-end)
-
-
--- Ayar Page
-local ayarText = Instance.new("TextLabel")
-ayarText.Size = UDim2.new(1,0,1,0)
-ayarText.Text = "Ayar Page"
-ayarText.TextColor3 = Color3.fromRGB(255,255,255)
-ayarText.Font = Enum.Font.GothamBold
-ayarText.TextSize = 24
-ayarText.BackgroundTransparency = 1
-ayarText.Parent = pages["Ayar"]
-
--- Player Page
-local humanoid = player.Character:WaitForChild("Humanoid")
-local speedValue = 25
-local enableSpeed = false
-local dragging = false
-local jumpPower = 50
-
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(1,0,0,30)
-speedLabel.Text = "Player speed"
-speedLabel.TextColor3 = Color3.fromRGB(255,255,255)
-speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-speedLabel.Font = Enum.Font.GothamBold
-speedLabel.TextSize = 18
-speedLabel.BackgroundTransparency = 1
-speedLabel.Parent = pages["Player"]
-
-local sliderBack = Instance.new("Frame")
-sliderBack.Size = UDim2.new(0.8,0,0,20)
-sliderBack.Position = UDim2.new(0,10,0,40)
-sliderBack.BackgroundColor3 = Color3.fromRGB(20,100,60)
-sliderBack.Parent = pages["Player"]
-Instance.new("UICorner", sliderBack).CornerRadius = UDim.new(0,10)
-
-local sliderBtn = Instance.new("TextButton")
-sliderBtn.Size = UDim2.new(0,15,1,0)
-sliderBtn.Position = UDim2.new(speedValue/100, -5, 0, 0)
-sliderBtn.BackgroundColor3 = Color3.fromRGB(0,255,120)
-sliderBtn.Text = ""
-sliderBtn.Parent = sliderBack
-Instance.new("UICorner", sliderBtn).CornerRadius = UDim.new(1,0)
-
-local valueText = Instance.new("TextLabel")
-valueText.Size = UDim2.new(0,50,0,20)
-valueText.Position = UDim2.new(1,5,0,0)
-valueText.Text = tostring(speedValue)
-valueText.TextColor3 = Color3.fromRGB(255,255,255)
-valueText.Font = Enum.Font.Gotham
-valueText.TextSize = 14
-valueText.BackgroundTransparency = 1
-valueText.Parent = sliderBack
-
-sliderBtn.MouseButton1Down:Connect(function() dragging = "speed" end)
-UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
-end)
-UserInputService.InputChanged:Connect(function(input)
-	if dragging == "speed" and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local relX = math.clamp((input.Position.X - sliderBack.AbsolutePosition.X) / sliderBack.AbsoluteSize.X, 0, 1)
-		sliderBtn.Position = UDim2.new(relX, -5, 0, 0)
-		speedValue = math.floor(relX*100)
-		valueText.Text = tostring(speedValue)
-		if enableSpeed then humanoid.WalkSpeed = speedValue end
-	end
-end)
-
-local switchBack = Instance.new("Frame")
-switchBack.Size = UDim2.new(0,60,0,25)
-switchBack.Position = UDim2.new(0,10,0,80)
-switchBack.BackgroundColor3 = Color3.fromRGB(80,80,80)
-switchBack.Parent = pages["Player"]
-Instance.new("UICorner", switchBack).CornerRadius = UDim.new(0,15)
-
-local knob = Instance.new("Frame")
-knob.Size = UDim2.new(0,23,0,23)
-knob.Position = UDim2.new(0,1,0,1)
-knob.BackgroundColor3 = Color3.fromRGB(200,200,200)
-knob.Parent = switchBack
-Instance.new("UICorner", knob).CornerRadius = UDim.new(1,0)
-
-local switchOn = false
-switchBack.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		switchOn = not switchOn
-		if switchOn then
-			knob:TweenPosition(UDim2.new(1,-24,0,1),"Out","Quad",0.2,true)
-			switchBack.BackgroundColor3 = Color3.fromRGB(0,200,100)
-			enableSpeed = true
-			humanoid.WalkSpeed = speedValue
+	row.MouseButton1Click:Connect(function()
+		active = not active
+		if active then
+			callback()
+			TweenService:Create(dot, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(90,180,120)}):Play()
 		else
-			knob:TweenPosition(UDim2.new(0,1,0,1),"Out","Quad",0.2,true)
-			switchBack.BackgroundColor3 = Color3.fromRGB(80,80,80)
-			enableSpeed = false
-			humanoid.WalkSpeed = 16
+			TweenService:Create(dot, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(54,54,62)}):Play()
+		end
+	end)
+end
+
+-- Butonları ekle
+makeFarmRow("Euro Farm", function()
+	safeTeleportLoop()
+	print("Euro Farm başlatıldı/durduruldu!")
+end)
+
+makeFarmRow("ParkourMoney Farm", function()
+	safeTeleportLoop_Parkour()
+	print("ParkourMoney Farm başlatıldı/durduruldu!")
+end)
+
+
+--== FLY FRAME ==--
+local flyActive = false
+local flySpeed = 50 -- varsayılan hız
+local flyConn
+
+-- Frame
+local flyFrame = Instance.new("Frame", farmList)
+flyFrame.Size = UDim2.new(1,-20,0,40)
+flyFrame.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", flyFrame).CornerRadius = UDim.new(0,8)
+
+-- "Fly" yazısı
+local flyLabel = Instance.new("TextLabel", flyFrame)
+flyLabel.Text = "Fly"
+flyLabel.Font = Enum.Font.GothamMedium
+flyLabel.TextSize = 15
+flyLabel.TextColor3 = Color3.fromRGB(230,230,235)
+flyLabel.TextXAlignment = Enum.TextXAlignment.Left
+flyLabel.Position = UDim2.fromOffset(12,0)
+flyLabel.Size = UDim2.new(0,60,1,0)
+flyLabel.BackgroundTransparency = 1
+
+-- TextBox (hız değeri için)
+local flyBox = Instance.new("TextBox", flyFrame)
+flyBox.Size = UDim2.new(0,120,0,28)
+flyBox.Position = UDim2.fromOffset(80,6)
+flyBox.PlaceholderText = "Hız"
+flyBox.Text = ""
+flyBox.ClearTextOnFocus = false
+flyBox.Font = Enum.Font.Gotham
+flyBox.TextSize = 14
+flyBox.TextColor3 = Color3.fromRGB(230,230,235)
+flyBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
+Instance.new("UICorner", flyBox).CornerRadius = UDim.new(0,6)
+
+-- Buton
+local flyBtn = Instance.new("TextButton", flyFrame)
+flyBtn.Size = UDim2.new(0,60,0,28)
+flyBtn.Position = UDim2.new(1,-70,0.5,-14)
+flyBtn.Text = "Etkinleştir"
+flyBtn.Font = Enum.Font.GothamBold
+flyBtn.TextSize = 14
+flyBtn.TextColor3 = Color3.fromRGB(220,220,225)
+flyBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", flyBtn).CornerRadius = UDim.new(0,6)
+
+-- Fly fonksiyonu
+local function toggleFly()
+	local player = game.Players.LocalPlayer
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+
+	flyActive = not flyActive
+	if flyActive then
+		-- kutuya yazılan değeri hız olarak al
+		local val = tonumber(flyBox.Text)
+		if val then flySpeed = val end
+
+		flyBtn.Text = "Durdur"
+
+		flyConn = game:GetService("RunService").RenderStepped:Connect(function()
+			local cam = workspace.CurrentCamera
+			local moveDir = Vector3.new()
+
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.W) then
+				moveDir = moveDir + cam.CFrame.LookVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.S) then
+				moveDir = moveDir - cam.CFrame.LookVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.A) then
+				moveDir = moveDir - cam.CFrame.RightVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.D) then
+				moveDir = moveDir + cam.CFrame.RightVector
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+				moveDir = moveDir + Vector3.new(0,1,0)
+			end
+			if game.UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+				moveDir = moveDir - Vector3.new(0,1,0)
+			end
+
+			if moveDir.Magnitude > 0 then
+				hrp.Velocity = moveDir.Unit * flySpeed
+			else
+				hrp.Velocity = Vector3.new(0,0,0)
+			end
+		end)
+	else
+		if flyConn then flyConn:Disconnect() end
+		flyBtn.Text = "Etkinleştir"
+		-- yere bırak
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			player.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+		end
+	end
+end
+
+flyBtn.MouseButton1Click:Connect(toggleFly)
+
+--== FAKE EURO FRAME ==--
+local fakeFrame = Instance.new("Frame", farmList)
+fakeFrame.Size = flyFrame.Size
+fakeFrame.Position = flyFrame.Position + UDim2.new(0,0,0,50) -- Fly'ın altına
+fakeFrame.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", fakeFrame).CornerRadius = UDim.new(0,8)
+
+-- "Fake Euro" Label
+local fakeLabel = Instance.new("TextLabel", fakeFrame)
+fakeLabel.Text = "Fake Euro"
+fakeLabel.Font = Enum.Font.GothamMedium
+fakeLabel.TextSize = 15
+fakeLabel.TextColor3 = Color3.fromRGB(230,230,235)
+fakeLabel.TextXAlignment = Enum.TextXAlignment.Left
+fakeLabel.Position = UDim2.fromOffset(12,0)
+fakeLabel.Size = UDim2.new(0,80,1,0)
+fakeLabel.BackgroundTransparency = 1
+
+-- TextBox (miktar)
+local fakeBox = Instance.new("TextBox", fakeFrame)
+fakeBox.Size = flyBox.Size
+fakeBox.Position = flyBox.Position
+fakeBox.PlaceholderText = "Miktar"
+fakeBox.Text = ""
+fakeBox.ClearTextOnFocus = false
+fakeBox.Font = Enum.Font.Gotham
+fakeBox.TextSize = 14
+fakeBox.TextColor3 = Color3.fromRGB(230,230,235)
+fakeBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
+Instance.new("UICorner", fakeBox).CornerRadius = UDim.new(0,6)
+
+-- Buton
+local fakeBtn = Instance.new("TextButton", fakeFrame)
+fakeBtn.Size = flyBtn.Size
+fakeBtn.Position = flyBtn.Position
+fakeBtn.Text = "Ver"
+fakeBtn.Font = Enum.Font.GothamBold
+fakeBtn.TextSize = 14
+fakeBtn.TextColor3 = Color3.fromRGB(220,220,225)
+fakeBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", fakeBtn).CornerRadius = UDim.new(0,6)
+
+-- Fonksiyon: butona basıldığında EURO ekle
+fakeBtn.MouseButton1Click:Connect(function()
+	local amount = tonumber(fakeBox.Text)
+	if amount and amount > 0 then
+		local stats = player:FindFirstChild("leaderstats")
+		if stats then
+			local euro = stats:FindFirstChild("EURO")
+			if euro and euro:IsA("IntValue") then
+				euro.Value = euro.Value + amount
+			end
 		end
 	end
 end)
 
-local jumpLabel = Instance.new("TextLabel")
-jumpLabel.Size = UDim2.new(1,0,0,30)
-jumpLabel.Position = UDim2.new(0,0,0,120)
-jumpLabel.Text = "Player jump power"
-jumpLabel.TextColor3 = Color3.fromRGB(255,255,255)
-jumpLabel.TextXAlignment = Enum.TextXAlignment.Left
-jumpLabel.Font = Enum.Font.GothamBold
-jumpLabel.TextSize = 18
-jumpLabel.BackgroundTransparency = 1
-jumpLabel.Parent = pages["Player"]
 
-local jumpBack = sliderBack:Clone()
-jumpBack.Position = UDim2.new(0,10,0,160)
-jumpBack.Parent = pages["Player"]
-local jumpBtn = jumpBack:FindFirstChildWhichIsA("TextButton")
-local jumpValueText = jumpBack:FindFirstChildWhichIsA("TextLabel")
-jumpValueText.Text = tostring(jumpPower)
 
-jumpBtn.MouseButton1Down:Connect(function() dragging = "jump" end)
-UserInputService.InputChanged:Connect(function(input)
-	if dragging == "jump" and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local relX = math.clamp((input.Position.X - jumpBack.AbsolutePosition.X) / jumpBack.AbsoluteSize.X, 0, 1)
-		jumpBtn.Position = UDim2.new(relX, -5, 0, 0)
-		jumpPower = math.floor(relX*200)
-		jumpValueText.Text = tostring(jumpPower)
-		humanoid.JumpPower = jumpPower
+updateFarmCanvas()
+
+--== TELEPORT SAYFASI ==--
+makeMenuButton("Teleport")
+local teleportPage = createPage("Teleport")
+
+local listHolder = Instance.new("ScrollingFrame", teleportPage)
+listHolder.Size = UDim2.fromScale(1,1)
+listHolder.BackgroundTransparency = 1
+listHolder.CanvasSize = UDim2.new(0,0,0,0)
+listHolder.ScrollBarThickness = 6
+
+local layout = Instance.new("UIListLayout", listHolder)
+layout.Padding = UDim.new(0,8)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function updateCanvas()
+	listHolder.CanvasSize = UDim2.fromOffset(0, layout.AbsoluteContentSize.Y + 12)
+end
+layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateCanvas)
+
+local function makeRow(textLabel: string, callback: ()->())
+	local row = Instance.new("TextButton", listHolder)
+	row.Size = UDim2.new(1,-20,0,40)
+	row.BackgroundColor3 = Color3.fromRGB(38,38,44)
+	row.Text = ""
+	Instance.new("UICorner", row).CornerRadius = UDim.new(0,8)
+
+	local lbl = Instance.new("TextLabel", row)
+	lbl.Text = textLabel
+	lbl.Font = Enum.Font.GothamMedium
+	lbl.TextSize = 15
+	lbl.TextColor3 = Color3.fromRGB(230,230,235)
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	lbl.Position = UDim2.fromOffset(12,0)
+	lbl.Size = UDim2.new(1,-60,1,0)
+	lbl.BackgroundTransparency = 1
+
+	local dot = Instance.new("Frame", row)
+	dot.Size = UDim2.fromOffset(12,12)
+	dot.Position = UDim2.new(1,-22,0.5,-6)
+	dot.BackgroundColor3 = Color3.fromRGB(54,54,62)
+	Instance.new("UICorner", dot).CornerRadius = UDim.new(1,0)
+
+	row.MouseButton1Click:Connect(function()
+		callback()
+		TweenService:Create(dot, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(90,180,120)}):Play()
+		task.delay(0.25, function()
+			TweenService:Create(dot, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(54,54,62)}):Play()
+		end)
+	end)
+end
+
+for name, target in pairs(LOCATIONS) do
+	makeRow(name, function()
+		local cf = findCFrame(target)
+		if cf then safeTeleport(cf) end
+	end)
+end
+updateCanvas()
+
+--== PLAYER SAYFASI ==--
+makeMenuButton("Player")
+local playerPage = createPage("Player")
+
+-- Player Page başlığı
+local profile = Instance.new("Frame", playerPage)
+profile.Size = UDim2.new(0, 350, 0, 70)
+profile.Position = UDim2.fromOffset(12, 20)
+profile.BackgroundColor3 = Color3.fromRGB(24,24,28)
+local pCorner = Instance.new("UICorner"); pCorner.CornerRadius = UDim.new(0,8); pCorner.Parent = profile
+local pStroke = Instance.new("UIStroke"); pStroke.Thickness = 1; pStroke.Transparency = 0.5; pStroke.Color = Color3.fromRGB(55,55,62); pStroke.Parent = profile
+
+-- Karakter resmi
+local headshot = Instance.new("ImageLabel", profile)
+headshot.Size = UDim2.fromOffset(60,60)
+headshot.Position = UDim2.fromOffset(10,5)
+headshot.BackgroundTransparency = 1
+headshot.Image = string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=150&h=150", player.UserId)
+
+-- Karakter adı
+local uname = Instance.new("TextLabel", profile)
+uname.Size = UDim2.new(1,-80,1,0)
+uname.Position = UDim2.fromOffset(80,0)
+uname.Font = Enum.Font.GothamBold
+uname.Text = player.DisplayName
+uname.TextSize = 16
+uname.TextXAlignment = Enum.TextXAlignment.Left
+uname.TextColor3 = Color3.fromRGB(230,230,235)
+uname.BackgroundTransparency = 1
+
+-- Sağ alt köşede EURO gösterimi
+local euroLabel = Instance.new("TextLabel", profile)
+euroLabel.AnchorPoint = Vector2.new(1,1) -- sağ alt köşe
+euroLabel.Position = UDim2.new(1, -10, 1, -10)
+euroLabel.Size = UDim2.new(0, 100, 0, 20)
+euroLabel.BackgroundTransparency = 1
+euroLabel.Font = Enum.Font.GothamBold
+euroLabel.TextSize = 14
+euroLabel.TextColor3 = Color3.fromRGB(230,230,235)
+euroLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+-- Anlık EURO değeri güncelleme
+local function updateEuro()
+	local stats = player:FindFirstChild("leaderstats")
+	if stats then
+		local euro = stats:FindFirstChild("EURO")
+		if euro then
+			euroLabel.Text = "EURO: " .. euro.Value
+			euro:GetPropertyChangedSignal("Value"):Connect(function()
+				euroLabel.Text = "EURO: " .. euro.Value
+			end)
+		end
+	end
+end
+updateEuro()
+
+--- Sol üst köşede sayaç göstergesi
+local timerLabel = Instance.new("TextLabel", profile)
+timerLabel.Position = UDim2.fromOffset(10, 0)
+timerLabel.Size = UDim2.new(0, 100, 0, 20)
+timerLabel.BackgroundTransparency = 1
+timerLabel.Font = Enum.Font.GothamBold
+timerLabel.TextSize = 14
+timerLabel.TextColor3 = Color3.fromRGB(230,230,235)
+timerLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Sayaç başlatma
+local startTime = tick() -- GUI açıldığı an
+local RunService = game:GetService("RunService")
+
+RunService.RenderStepped:Connect(function()
+	local elapsed = tick() - startTime
+	local minutes = math.floor(elapsed / 60)
+	local seconds = math.floor(elapsed % 60)
+	local timeText = string.format("%02d:%02d", minutes, seconds)
+	timerLabel.Text = timeText
+end)
+
+-- Hız frame'i
+local speedFrame = Instance.new("Frame", playerPage)
+speedFrame.Size = UDim2.new(0, 350, 0, 70)
+speedFrame.Position = UDim2.fromOffset(12, 100) -- profile'ın altına
+speedFrame.BackgroundColor3 = Color3.fromRGB(24,24,28)
+local sCorner = Instance.new("UICorner"); sCorner.CornerRadius = UDim.new(0,8); sCorner.Parent = speedFrame
+local sStroke = Instance.new("UIStroke"); sStroke.Thickness = 1; sStroke.Transparency = 0.5; sStroke.Color = Color3.fromRGB(55,55,62); sStroke.Parent = speedFrame
+
+-- Sol tarafta "Hız" yazısı
+local speedLabel = Instance.new("TextLabel", speedFrame)
+speedLabel.Size = UDim2.new(0, 50, 1, 0)
+speedLabel.Position = UDim2.fromOffset(10,0)
+speedLabel.Text = "Hız"
+speedLabel.Font = Enum.Font.GothamBold
+speedLabel.TextSize = 16
+speedLabel.TextColor3 = Color3.fromRGB(230,230,235)
+speedLabel.BackgroundTransparency = 1
+speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Ortada TextBox
+local speedBox = Instance.new("TextBox", speedFrame)
+speedBox.Size = UDim2.new(0, 150, 0, 36)
+speedBox.Position = UDim2.fromOffset(70, 17)
+speedBox.PlaceholderText = "Hız değeri"
+speedBox.Text = ""
+speedBox.ClearTextOnFocus = false
+speedBox.Font = Enum.Font.Gotham
+speedBox.TextSize = 14
+speedBox.TextColor3 = Color3.fromRGB(230,230,235)
+speedBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
+Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0,6)
+
+-- Sağ tarafta buton
+local speedBtn = Instance.new("TextButton", speedFrame)
+speedBtn.Size = UDim2.new(0, 60, 0, 36)
+speedBtn.Position = UDim2.fromOffset(240,17)
+speedBtn.Text = "Ayarla"
+speedBtn.Font = Enum.Font.GothamBold
+speedBtn.TextSize = 14
+speedBtn.TextColor3 = Color3.fromRGB(220,220,225)
+speedBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", speedBtn).CornerRadius = UDim.new(0,6)
+
+-- Buton click olayı: oyuncunun yürüyüş hızını ayarlıyor
+speedBtn.MouseButton1Click:Connect(function()
+	local value = tonumber(speedBox.Text)
+	if value and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+		player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = value
 	end
 end)
-UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging=="jump" then dragging = false end
+
+-- JumpPower frame'i -> artık Işınlan frame'i
+local tpFrame = Instance.new("Frame", playerPage)
+tpFrame.Size = UDim2.new(0, 350, 0, 70)
+tpFrame.Position = UDim2.fromOffset(12, 190) -- speedFrame'ın altına
+tpFrame.BackgroundColor3 = Color3.fromRGB(24,24,28)
+local tpCorner = Instance.new("UICorner"); tpCorner.CornerRadius = UDim.new(0,8); tpCorner.Parent = tpFrame
+local tpStroke = Instance.new("UIStroke"); tpStroke.Thickness = 1; tpStroke.Transparency = 0.5; tpStroke.Color = Color3.fromRGB(55,55,62); tpStroke.Parent = tpFrame
+
+-- Sol tarafta "Işınlan" yazısı
+local tpLabel = Instance.new("TextLabel", tpFrame)
+tpLabel.Size = UDim2.new(0, 70, 1, 0)
+tpLabel.Position = UDim2.fromOffset(10,0)
+tpLabel.Text = "Işınlan"
+tpLabel.Font = Enum.Font.GothamBold
+tpLabel.TextSize = 16
+tpLabel.TextColor3 = Color3.fromRGB(230,230,235)
+tpLabel.BackgroundTransparency = 1
+tpLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Ortada TextBox
+local tpBox = Instance.new("TextBox", tpFrame)
+tpBox.Size = UDim2.new(0, 150, 0, 36)
+tpBox.Position = UDim2.fromOffset(90,17)
+tpBox.PlaceholderText = "Oyuncu adı"
+tpBox.Text = ""
+tpBox.ClearTextOnFocus = false
+tpBox.Font = Enum.Font.Gotham
+tpBox.TextSize = 14
+tpBox.TextColor3 = Color3.fromRGB(230,230,235)
+tpBox.BackgroundColor3 = Color3.fromRGB(54,54,62)
+Instance.new("UICorner", tpBox).CornerRadius = UDim.new(0,6)
+
+-- Sağ tarafta buton
+local tpBtn = Instance.new("TextButton", tpFrame)
+tpBtn.Size = UDim2.new(0, 60, 0, 36)
+tpBtn.Position = UDim2.fromOffset(250,17)
+tpBtn.Text = "Işınlan"
+tpBtn.Font = Enum.Font.GothamBold
+tpBtn.TextSize = 14
+tpBtn.TextColor3 = Color3.fromRGB(220,220,225)
+tpBtn.BackgroundColor3 = Color3.fromRGB(38,38,44)
+Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0,6)
+
+-- Buton click olayı: oyuncuyu ışınlar
+tpBtn.MouseButton1Click:Connect(function()
+	local input = tpBox.Text:lower()
+	for _, p in pairs(game.Players:GetPlayers()) do
+		if string.find(p.Name:lower(), input) or string.find(p.DisplayName:lower(), input) then
+			local hrp = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
+			if hrp and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+				player.Character.HumanoidRootPart.CFrame = hrp.CFrame + Vector3.new(0,5,0)
+			end
+			break
+		end
+	end
 end)
 
--- Başlangıç sayfası = Home
-pages["Home"].Visible = true
+
+
+-- Başlangıç sayfası
+switchPage("Home")
+
+--== MINIMIZE & CLOSE ==--
+--== MINIMIZE & CLOSE ==--
+-- Minimize & Close (yeni mantık)
+local minimized = false
+
+-- 40x40 geri açma butonu (başlangıçta gizli)
+local restoreBtn = Instance.new("ImageButton")
+restoreBtn.Size = UDim2.fromOffset(40, 40)
+restoreBtn.Position = UDim2.fromScale(0, 0)
+restoreBtn.BackgroundColor3 = Color3.fromRGB(38, 38, 44)
+restoreBtn.Image = "rbxassetid://7072724987" -- ikon ID'sini değiştirebilirsin
+restoreBtn.Visible = false
+restoreBtn.Parent = pg
+Instance.new("UICorner", restoreBtn).CornerRadius = UDim.new(0, 6)
+
+local minimized = false
+
+local minimized = false
+minimizeBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+
+	-- AnaFrame görünürlüğünü toggle et
+	body.Visible = not minimized
+
+	-- AnaFrame'in arka plan transparanlığını toggle et
+	if minimized then
+		window.BackgroundTransparency = 1
+	else
+		window.BackgroundTransparency = 0
+	end
+
+	-- Stroke kalınlığını toggle et
+	if minimized then
+		stroke.Thickness = 0
+	else
+		stroke.Thickness = 1.5
+	end
+end)
+
+
+
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy() -- tüm GUI'yi kapat
+end)
+
+-- Topbar'ı sürüklenebilir yap
+local dragging = false
+local dragStart = Vector2.new(0,0)
+local startPos = UDim2.new(0,0,0,0)
+
+topbar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		dragStart = input.Position
+		startPos = window.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+topbar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		local dragInput
+		dragInput = input
+		dragInput.Changed:Connect(function()
+			if dragInput.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+		local delta = input.Position - dragStart
+		window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
