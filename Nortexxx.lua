@@ -136,10 +136,47 @@ MainTab:AddToggle({
 -- Teleports Tab
 local TeleportsTab = Window:MakeTab({Name = "Teleports", Icon = "rbxassetid://4483345998", PremiumOnly = false})
 
--- Mevcut 3 buton
-TeleportsTab:AddButton({Name = "Spawn", Callback = function() print("Spawn") end})
-TeleportsTab:AddButton({Name = "Market", Callback = function() print("Market") end})
-TeleportsTab:AddButton({Name = "Halısaha", Callback = function() print("Halısaha") end})
+-- Spawn butonu
+TeleportsTab:AddButton({
+    Name = "Spawn",
+    Callback = function()
+        local spawnModel = workspace:FindFirstChild("SpawnLocationModel")
+        if spawnModel and spawnModel:FindFirstChild("SpawnLocation") then
+            local playerHRP = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if playerHRP then
+                playerHRP.CFrame = spawnModel.SpawnLocation.CFrame + Vector3.new(0,5,0)
+            end
+        end
+    end
+})
+
+-- Market butonu
+TeleportsTab:AddButton({
+    Name = "Market",
+    Callback = function()
+        local shop = workspace:FindFirstChild("Shopblock2")
+        if shop then
+            local playerHRP = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if playerHRP then
+                playerHRP.CFrame = shop.CFrame + Vector3.new(0,5,0)
+            end
+        end
+    end
+})
+
+-- Halısaha butonu
+TeleportsTab:AddButton({
+    Name = "Halısaha",
+    Callback = function()
+        local futbolFolder = workspace:FindFirstChild("FutbolGerekli")
+        if futbolFolder and futbolFolder:FindFirstChild("TopSpawner") then
+            local playerHRP = Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if playerHRP then
+                playerHRP.CFrame = futbolFolder.TopSpawner.CFrame + Vector3.new(0,5,0)
+            end
+        end
+    end
+})
 
 -- Dropdown ve ışınlama
 local selectedPlayer = nil
