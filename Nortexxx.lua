@@ -11,10 +11,11 @@ local Window = OrionLib:MakeWindow({
 
 -- Home Tab
 local HomeTab = Window:MakeTab({Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false})
-HomeTab:AddLabel("1")
-HomeTab:AddLabel("2")
-HomeTab:AddLabel("3")
-HomeTab:AddLabel("4")
+HomeTab:AddLabel("Euro Farm Eklendi!")
+HomeTab:AddLabel("Hız Eklendi!")
+HomeTab:AddLabel("Işınlanma eklendi")
+HomeTab:AddLabel("Yeni UI")
+HomeTab:AddLabel("NOT : Parkour Money çalışmayabilir!")
 
 -- Main Tab
 local MainTab = Window:MakeTab({Name = "Main", Icon = "rbxassetid://4483345998", PremiumOnly = false})
@@ -198,3 +199,4 @@ PlayerTab:AddToggle({Name = "Enable", Default = false, Callback = function(Value
 
 -- Init UI
 OrionLib:Init()
+
