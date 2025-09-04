@@ -6,14 +6,17 @@ local Window = OrionLib:MakeWindow({
     Name = "Nortex Hub",
     HidePremium = false,
     SaveConfig = true,
-    ConfigFolder = "NortexHubConfig"
+    ConfigFolder = "NortexHubConfig",
+    IntroEnabled = true,
+    IntroText = "Nortex Hub'a Hoşgeldiniz!",
+    IntroIcon = "rbxassetid://4483345998"
 })
 
 -- Home Tab
 local HomeTab = Window:MakeTab({Name = "Home", Icon = "rbxassetid://4483345998", PremiumOnly = false})
 HomeTab:AddLabel("Euro Farm Eklendi!")
 HomeTab:AddLabel("Hız Eklendi!")
-HomeTab:AddLabel("Işınlanma eklendi")
+HomeTab:AddLabel("Işınlanma Eklendi")
 HomeTab:AddLabel("Yeni UI")
 HomeTab:AddLabel("NOT : Parkour Money çalışmayabilir!")
 
@@ -53,7 +56,7 @@ local function euroFarmLoop()
             if #targets > 0 then
                 local targetPart = targets[currentIndex]
                 if targetPart then
-                    hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0) -- böyle kalsın elleme
+                    hrp.CFrame = targetPart.CFrame + Vector3.new(0,10,0)
                     local tween = TweenService:Create(
                         hrp,
                         TweenInfo.new(1, Enum.EasingStyle.Linear),
@@ -199,4 +202,3 @@ PlayerTab:AddToggle({Name = "Enable", Default = false, Callback = function(Value
 
 -- Init UI
 OrionLib:Init()
-
