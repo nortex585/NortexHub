@@ -15,28 +15,6 @@ local antiAfkEnabled      = true
 local selectedPlayerName = ""
 
 -- ==================== YARDIMCI FONKSIYONLAR ====================
-local function sendChat(msg)
-    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        local channel = TextChatService.TextChannels.RBXGeneral
-        if channel then channel:SendAsync(msg) end
-    else
-        local chatEvent = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
-        if chatEvent then
-            chatEvent.SayMessageRequest:FireServer(msg, "All")
-        end
-    end
-end
-
-local function triggerAnonimRemotes()
-    local remotes = {"HideDevice", "HideRutbe", "HideLevel"}
-    for _, name in pairs(remotes) do
-        local remote = ReplicatedStorage:FindFirstChild(name) or ReplicatedStorage:FindFirstChild(name, true)
-        if remote and remote:IsA("RemoteEvent") then
-            remote:FireServer()
-        end
-    end
-end
-
 local function getCurrentTLParts()
     local parts = {}
     local targetFolder = nil
@@ -85,7 +63,7 @@ local MainTab = Window:CreateTab("Farm", nil)
 local TeleportsTab = Window:CreateTab("Isinlanma", nil)
 local SettingsTab = Window:CreateTab("Ayarlar", nil)
 
--- ==================== HOME TAB (YAZILAR GERI EKLENDI) ====================
+-- ==================== HOME TAB ====================
 HomeTab:CreateSection("Sosyal Medya")
 
 HomeTab:CreateButton({
@@ -123,11 +101,10 @@ MainTab:CreateToggle({
                local targets = getCurrentTLParts()
                
                if #targets == 0 then
-                  task.wait(1) -- Para kalmayınca bekle, döngüden çıkma
+                  task.wait(1) 
                   continue
                end
 
-               -- Her zaman mevcut en yeni parçaya odaklan
                local targetPart = targets[1]
                local character = LocalPlayer.Character
                local hrp = character and character:FindFirstChild("HumanoidRootPart")
@@ -138,7 +115,6 @@ MainTab:CreateToggle({
                   tween:Play()
                   
                   local start = tick()
-                  -- Parça yok olana kadar veya süre dolana kadar bekle
                   repeat task.wait() until not targetPart.Parent or (tick() - start > 0.7)
                end
                task.wait(0.1)
@@ -165,16 +141,6 @@ task.spawn(function()
         task.wait(1)
     end
 end)
-
-MainTab:CreateToggle({
-   Name = "Anonim Mod",
-   CurrentValue = false,
-   Flag = "AnonimModToggle",
-   Callback = function(Value)
-      triggerAnonimRemotes()
-      if Value then sendChat(";char me wsytex") else sendChat(";unchar") end
-   end,
-})
 
 -- ==================== TELEPORTS TAB ====================
 TeleportsTab:CreateSection("Harita Isinlanmalari")
@@ -282,4 +248,4 @@ game:GetService("GuiService").ErrorMessageChanged:Connect(function()
 end)
 
 Rayfield:LoadConfiguration()
-Rayfield:Notify({Title = "Nortex Hub", Content = "Ayarlar ve Bilgiler Yüklendi!", Duration = 3})
+Rayfield:Notify({Title = "Nortex Hub", Content = "Ayarlar Yüklendi!", Duration = 3})
