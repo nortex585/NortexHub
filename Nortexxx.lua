@@ -90,7 +90,7 @@ HomeTab:CreateLabel("Hub Henuz Betadadir Sorunlari Discordan bildirin!")
 MainTab:CreateSection("Para Farm Sistemleri")
 
 MainTab:CreateToggle({
-   Name = "TL Farm",
+   Name = "TL Farm (Güvenli Mod)",
    CurrentValue = false,
    Flag = "TLFarmToggle",
    Callback = function(Value)
@@ -101,7 +101,7 @@ MainTab:CreateToggle({
                local targets = getCurrentTLParts()
                
                if #targets == 0 then
-                  task.wait(1) 
+                  task.wait(1.5) 
                   continue
                end
 
@@ -110,14 +110,20 @@ MainTab:CreateToggle({
                local hrp = character and character:FindFirstChild("HumanoidRootPart")
                
                if targetPart and targetPart.Parent and hrp then
-                  hrp.CFrame = targetPart.CFrame + Vector3.new(0, 8, 0)
-                  local tween = TweenService:Create(hrp, TweenInfo.new(0.4, Enum.EasingStyle.Linear), {CFrame = targetPart.CFrame})
+                  -- Kick yememek için önce biraz uzağına ışınlanıp sonra Tween yapıyoruz
+                  hrp.CFrame = targetPart.CFrame + Vector3.new(0, 12, 0)
+                  task.wait(0.1)
+                  
+                  -- Tween hızı 0.8 saniyeye çekildi (Daha yavaş ve güvenli)
+                  local tween = TweenService:Create(hrp, TweenInfo.new(0.8, Enum.EasingStyle.Quad), {CFrame = targetPart.CFrame + Vector3.new(0, 2, 0)})
                   tween:Play()
                   
                   local start = tick()
-                  repeat task.wait() until not targetPart.Parent or (tick() - start > 0.7)
+                  -- Parçanın alınmasını bekle
+                  repeat task.wait() until not targetPart.Parent or (tick() - start > 1.2)
                end
-               task.wait(0.1)
+               -- Her toplama sonrası kısa bir "mola" (Anti-Cheat için)
+               task.wait(0.5)
             end
          end)
       else
@@ -248,4 +254,4 @@ game:GetService("GuiService").ErrorMessageChanged:Connect(function()
 end)
 
 Rayfield:LoadConfiguration()
-Rayfield:Notify({Title = "Nortex Hub", Content = "Ayarlar Yüklendi!", Duration = 3})
+Rayfield:Notify({Title = "Nortex Hub", Content = "Güvenli Farm Modu Aktif!", Duration = 3})
